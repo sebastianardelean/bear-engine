@@ -1,0 +1,282 @@
+#include <Windows.h>
+#include <gl/GL.h>
+#include <gl/glu.h>
+#include "configuration.h"
+#include "debug.h"
+
+
+#define BITS_PER_COLOR 32u
+
+/* Functions defined in other modules. */
+
+extern void ReportError(wchar_t* sMessage);
+extern LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+
+/* Functions defined in this module. */
+static HWND g_hWnd = NULL;
+static BOOL g_bFullScreen = FALSE;
+static HDC g_hDC = NULL;
+static HGLRC g_hRC = NULL;
+
+static HINSTANCE g_hInstance = NULL; //instance of the application
+
+
+
+extern INT EngineCreateWindow(
+                        char * cTitle,
+                        INT iWinWidth,
+                        INT iWinHeight,
+                        BOOL bFullScreen
+                        );
+
+extern void EngineDestroyWindow();
+
+extern void EngineDrawScene();
+
+static GLvoid InitGL(GLvoid);
+
+static GLvoid ResizeGLScene(GLsizei width, GLsizei height);
+
+
+
+
+INT EngineCreateWindow(char *cTitle,
+                       INT iWinWidth,
+                       INT iWinHeight,
+                       BOOL bFullScreen
+                 )
+{
+  GLuint PixelFormat = 0 ;
+  WNDCLASS wc;
+  DWORD dwExStyle;
+  DWORD dwStyle;
+  RECT rWindowRect;
+
+  rWindowRect.left = (DWORDLONG)0;
+  rWindowRect.right = (DWORDLONG)iWinWidth;
+  rWindowRect.top = (DWORDLONG)0;
+  rWindowRect.bottom = (DWORDLONG)iWinHeight;
+  g_bFullScreen = bFullScreen;
+  g_hInstance = GetModuleHandle(NULL);
+
+  if (g_hInstance == NULL)
+  {
+    return GetLastError();
+  }
+
+  wc.style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
+  wc.lpfnWndProc = (WNDPROC) WndProc;		
+  wc.cbClsExtra = 0;				
+  wc.cbWndExtra	= 0;				
+  wc.hInstance	= g_hInstance;			
+  wc.hIcon = LoadIcon(NULL, IDI_WINLOGO);	
+  wc.hCursor = LoadCursor(NULL, IDC_ARROW);	
+  wc.hbrBackground = NULL;			
+  wc.lpszMenuName = NULL;			
+  wc.lpszClassName = "TheBear";			
+
+  if (!RegisterClass(&wc))
+  {
+    ReportError(L"Failed to register the Window Class.");
+    return GetLastError();
+  }
+
+  if (g_bFullScreen)
+  {
+    DEVMODE dmScreenSettings;
+    memset(&dmScreenSettings, 0, sizeof(dmScreenSettings));
+    dmScreenSettings.dmSize = sizeof(dmScreenSettings);
+    dmScreenSettings.dmPelsWidth = iWinWidth;
+    dmScreenSettings.dmPelsHeight = iWinHeight;
+    dmScreenSettings.dmBitsPerPel = BITS_PER_COLOR;
+    dmScreenSettings.dmFields = DM_BITSPERPEL|DM_PELSWIDTH|DM_PELSHEIGHT;
+
+    if (ChangeDisplaySettings (&dmScreenSettings, CDS_FULLSCREEN) != DISP_CHANGE_SUCCESSFUL)
+    {
+      ReportError(L"The requested fullscreen mode is not supported!");
+      g_bFullScreen = FALSE;
+    }
+      
+  }
+
+  if(g_bFullScreen)
+  {
+    dwExStyle = WS_EX_APPWINDOW;
+    dwStyle = WS_POPUP;
+    ShowCursor(FALSE);
+  }
+  else
+  {
+    dwExStyle = WS_EX_APPWINDOW | WS_EX_WINDOWEDGE;
+    dwStyle = WS_OVERLAPPEDWINDOW;
+  }
+
+  AdjustWindowRectEx(&rWindowRect, dwStyle, FALSE, dwExStyle);
+
+  /*Create Window*/
+  g_hWnd = CreateWindowEx(dwExStyle,
+                          "TheBear",
+                          "TheBear Engine",
+                          dwStyle | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,
+                          0,
+                          0,
+                          rWindowRect.right - rWindowRect.left,
+                          rWindowRect.bottom - rWindowRect.top,
+                          NULL,
+                          NULL,
+                          g_hInstance,
+                          NULL);
+  if (NULL == g_hWnd)
+  {
+    ReportError(L"Could not create window!");
+    return GetLastError();
+  }
+
+  static PIXELFORMATDESCRIPTOR pfd =
+  {
+    sizeof(PIXELFORMATDESCRIPTOR),
+    1,
+    PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER, PFD_TYPE_RGBA,
+    BITS_PER_COLOR,
+    0,0,0,0,0,0,
+    0,
+    0,
+    0,
+    0,0,0,0,
+    32,
+    0,
+    0,
+    PFD_MAIN_PLANE,
+    0,
+    0,0,0
+  };
+
+  g_hDC = GetDC(g_hWnd);
+  if (NULL == g_hDC)
+  {
+    ReportError(L"Could not get Device Context");
+    return GetLastError();
+  }
+  PixelFormat = ChoosePixelFormat(g_hDC, &pfd);
+  if (0 == PixelFormat)
+  {
+    ReportError(L"PixelFormat");
+    return GetLastError();
+  }
+
+  if(!SetPixelFormat(g_hDC, PixelFormat, &pfd))
+  {
+    ReportError(L"SetPixelFormat");
+    return GetLastError();
+  }
+
+  g_hRC = wglCreateContext(g_hDC);
+  if (NULL == g_hRC)
+  {
+    ReportError(L"wglCreateContext");
+    return GetLastError();
+  }
+  if(!wglMakeCurrent(g_hDC, g_hRC))
+  {
+    ReportError(L"wglMakeCurrent");
+    return GetLastError();
+  }
+
+  ShowWindow(g_hWnd, SW_SHOW);
+  SetForegroundWindow(g_hWnd);
+  SetFocus(g_hWnd);
+  ResizeGLScene(iWinWidth, iWinHeight);
+
+  InitGL();
+
+  return 0;
+  
+  
+}
+
+void EngineDestroyWindow()
+{
+  if (g_bFullScreen)
+  {
+    ChangeDisplaySettings(NULL,0);
+    ShowCursor(TRUE);
+  }
+
+  if (g_hRC)
+  {
+    if (!wglMakeCurrent(NULL, NULL))
+    {
+      ReportError(L"Release of DC and RC failed");
+    }
+    if (!wglDeleteContext(g_hRC))
+    {
+      ReportError(L"Render release failed");
+    }
+    g_hRC = NULL;
+  }
+
+  if (g_hDC)
+  {
+    if (0 == ReleaseDC(g_hWnd, g_hDC))
+    {
+      ReportError(L"Release Device Context failed");
+      g_hDC = NULL;
+    }
+  }
+  
+  
+  if (g_hWnd && !DestroyWindow(g_hWnd))					// Are We Able To Destroy The Window?
+  {
+    ReportError(L"Failed to destroy Window");
+    g_hWnd=NULL;										// Set hWnd To NULL
+  }
+
+  if (!UnregisterClass("OpenGL",g_hInstance))			// Are We Able To Unregister Class
+  {
+    ReportError(L"Could not unregister instance");
+    g_hInstance=NULL;									// Set hInstance To NULL
+  }
+}
+
+void EngineDrawScene()
+{
+  /*Here will only swap buffers*/
+
+  SwapBuffers(g_hDC);
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  glLoadIdentity();
+}
+
+GLvoid InitGL(GLvoid)
+{
+  glShadeModel(GL_SMOOTH);							// Enable Smooth Shading
+  glClearColor(0.0f, 0.0f, 0.0f, 0.5f);				// Black Background
+  glClearDepth(1.0f);									// Depth Buffer Setup
+  glEnable(GL_DEPTH_TEST);							// Enables Depth Testing
+  glDepthFunc(GL_LEQUAL);								// The Type Of Depth Testing To Do
+  glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);	// Really Nice Perspective Calculations
+  
+}
+
+
+
+GLvoid ResizeGLScene(GLsizei width, GLsizei height)
+{
+  if (height == 0)
+  {
+    height = 1;
+   
+  }
+
+  GLfloat aspect = (GLfloat)width/(GLfloat)height;
+  glViewport(0, 0, width, height);
+
+  glMatrixMode(GL_PROJECTION);
+  glLoadIdentity();
+
+  gluPerspective(45.0f, aspect, 0.1f, 100.0f);
+  
+  glMatrixMode(GL_MODELVIEW);
+  glLoadIdentity();
+
+}

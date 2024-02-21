@@ -1,0 +1,9 @@
+LIBRARY bengine_dll
+EXPORTS
+HndlEngineCreateWindow
+HndlEngineRun
+HndlEngineGetKeyState
+HndlEngineDrawLine
+HndlEngineDrawTriangle
+HndlEngineDrawQuad
+HndlEngineDrawPoint
