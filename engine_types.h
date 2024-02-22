@@ -19,7 +19,12 @@ typedef struct
   float z;
 }coordinate_t;
 
-
+typedef struct
+{
+  INT32 width;
+  INT32 height;
+  color_t *pixels;
+}sprite_t;
 
 
 #endif
