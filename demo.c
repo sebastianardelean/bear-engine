@@ -88,31 +88,31 @@ static BOOL HndlDraw(void)
     {
       for (j = 0; j < SCREEN_HEIGHT; j++)
       {
-        point_t p = {(float)i,(float)j, -1.0f};
+        coordinate_t p = {(float)i,(float)j, -1.0f};
         color_t color = {rand()%255, rand()%255, rand()%255, 0};
         HndlDrawPoint(p, color);
       }
     }
 #endif
 #if 0
-    point_t p1 = {0.0f, 0.0f, -1.0f};
-    point_t p2 = {200.0f, 200.0f, -1.0f};
+    coordinate_t p1 = {0.0f, 0.0f, -1.0f};
+    coordinate_t p2 = {200.0f, 200.0f, -1.0f};
     color_t color = {rand()%255, rand()%255, rand()%255, 0};
     HndlDrawLine(p1, p2, color);
     
-    point_t pr1 = {200.0f, 200.0f, -2.0f};
-    point_t pr2 = {250.0f, 200.0f, -2.0f};
-    point_t pr3 = {200.0f, 150.0f, -2.0f};
+    coordinate_t pr1 = {200.0f, 200.0f, -2.0f};
+    coordinate_t pr2 = {250.0f, 200.0f, -2.0f};
+    coordinate_t pr3 = {200.0f, 150.0f, -2.0f};
 
     color_t cr = {rand()%255, rand()%255, rand()%255, 0};
     
     HndlDrawTriangle(pr1, pr2, pr3, cr);
 
 
-    point_t pq1 = {300.0f, 300.0f, -2.0f};
-    point_t pq2 = {350.0f, 300.0f, -2.0f};
-    point_t pq3 = {350.0f, 250.0f, -2.0f};
-    point_t pq4 = {300.0f, 250.0f, -2.0f};
+    coordinate_t pq1 = {300.0f, 300.0f, -2.0f};
+    coordinate_t pq2 = {350.0f, 300.0f, -2.0f};
+    coordinate_t pq3 = {350.0f, 250.0f, -2.0f};
+    coordinate_t pq4 = {300.0f, 250.0f, -2.0f};
     color_t cq = {rand()%255, rand()%255, rand()%255, 0};
     HndlDrawQuad(pq1, pq2, pq3, pq4, cq);
     

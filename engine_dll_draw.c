@@ -15,36 +15,36 @@
 
 
 extern void EngineDrawPoint(
-                            const point_t p,
+                            const coordinate_t p,
                             const color_t color
                             );
 
 extern void EngineDrawLine(
-                           const point_t p1,
-                           const point_t p2,
+                           const coordinate_t p1,
+                           const coordinate_t p2,
                            const color_t color
                            );
 
 extern void EngineDrawTriangle(
-                               const point_t top_p,
-                               const point_t bottom_left_p,
-                               const point_t bottom_right_p,
+                               const coordinate_t top_p,
+                               const coordinate_t bottom_left_p,
+                               const coordinate_t bottom_right_p,
                                const color_t color
                                );
 
 extern void EngineDrawQuad(
-                           const point_t top_left_p,
-                           const point_t top_right_p,
-                           const point_t bottom_right_p,
-                           const point_t bottom_left_p,
+                           const coordinate_t top_left_p,
+                           const coordinate_t top_right_p,
+                           const coordinate_t bottom_right_p,
+                           const coordinate_t bottom_left_p,
                            const color_t color
                            );
 
 void EngineDrawPoint(
-                            const point_t p,
+                            const coordinate_t p,
                             const color_t color)
 {
-  point_t m_p;
+  coordinate_t m_p;
   NORMALIZE_3D(p, m_p);
   glBegin(GL_POINTS);
   glColor4d(color.r/255.0f, color.g/255.0f, color.b/255.0f, color.a/255.0f);
@@ -53,11 +53,11 @@ void EngineDrawPoint(
 }
 
 
-void EngineDrawLine(point_t p1, point_t p2, color_t color)
+void EngineDrawLine(coordinate_t p1, coordinate_t p2, color_t color)
 {
 
-  point_t m_p1;
-  point_t m_p2;
+  coordinate_t m_p1;
+  coordinate_t m_p2;
   NORMALIZE_3D(p1, m_p1);
   NORMALIZE_3D(p2, m_p2);
   
@@ -74,15 +74,15 @@ void EngineDrawLine(point_t p1, point_t p2, color_t color)
 }
 
 void EngineDrawTriangle(
-                        const point_t top_p,
-                        const point_t bottom_left_p,
-                        const point_t bottom_right_p,
+                        const coordinate_t top_p,
+                        const coordinate_t bottom_left_p,
+                        const coordinate_t bottom_right_p,
                         const color_t color
                         )
 {
-  point_t m_p1;
-  point_t m_p2;
-  point_t m_p3;
+  coordinate_t m_p1;
+  coordinate_t m_p2;
+  coordinate_t m_p3;
   NORMALIZE_3D(top_p, m_p1);
   NORMALIZE_3D(bottom_left_p, m_p2);
   NORMALIZE_3D(bottom_right_p, m_p3);
@@ -100,17 +100,17 @@ void EngineDrawTriangle(
 
 
 void EngineDrawQuad(
-                    const point_t top_left_p,
-                    const point_t top_right_p,
-                    const point_t bottom_right_p,
-                    const point_t bottom_left_p,
+                    const coordinate_t top_left_p,
+                    const coordinate_t top_right_p,
+                    const coordinate_t bottom_right_p,
+                    const coordinate_t bottom_left_p,
                     const color_t color
                     )
 {
-  point_t m_p1;
-  point_t m_p2;
-  point_t m_p3;
-  point_t m_p4;
+  coordinate_t m_p1;
+  coordinate_t m_p2;
+  coordinate_t m_p3;
+  coordinate_t m_p4;
   
   NORMALIZE_3D(top_left_p, m_p1);
   NORMALIZE_3D(top_right_p, m_p2);

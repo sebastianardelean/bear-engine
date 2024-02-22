@@ -17,6 +17,9 @@ typedef struct
   float x;
   float y;
   float z;
-}point_t;
+}coordinate_t;
+
+
+
 
 #endif

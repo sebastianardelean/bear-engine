@@ -27,25 +27,25 @@ extern BOOL EngineGetKeyState(BYTE bKeyCode);
 /*Engine draw Functions*/
 extern void EngineDrawScene();
 extern void EngineDrawPoint(
-                            const point_t p,
+                            const coordinate_t p,
                             const color_t color);
 extern void EngineDrawLine(
-                           const point_t p1,
-                           const point_t p2,
+                           const coordinate_t p1,
+                           const coordinate_t p2,
                            const color_t color);
 
 extern void EngineDrawTriangle(
-                               const point_t top_p,
-                               const point_t bottom_left_p,
-                               const point_t bottom_right_p,
+                               const coordinate_t top_p,
+                               const coordinate_t bottom_left_p,
+                               const coordinate_t bottom_right_p,
                                const color_t color
                                );
 
 extern void EngineDrawQuad(
-                           const point_t top_left_p,
-                           const point_t top_right_p,
-                           const point_t bottom_right_p,
-                           const point_t bottom_left_p,
+                           const coordinate_t top_left_p,
+                           const coordinate_t top_right_p,
+                           const coordinate_t bottom_right_p,
+                           const coordinate_t bottom_left_p,
                            const color_t color
                            );
 
@@ -62,19 +62,19 @@ extern "C"
     return LoadGlTexture(sFilename);
   }
   __declspec(dllexport) void HndlEngineDrawQuad(
-                                                const point_t top_left_p,
-                                                const point_t top_right_p,
-                                                const point_t bottom_right_p,
-                                                const point_t bottom_left_p,
+                                                const coordinate_t top_left_p,
+                                                const coordinate_t top_right_p,
+                                                const coordinate_t bottom_right_p,
+                                                const coordinate_t bottom_left_p,
                                                 const color_t color)
   {
     EngineDrawQuad(top_left_p, top_right_p, bottom_right_p, bottom_left_p, color);
   }
 
   __declspec(dllexport) void HndlEngineDrawTriangle(
-                                                    const point_t top_p,
-                                                    const point_t bottom_left_p,
-                                                    const point_t bottom_right_p,
+                                                    const coordinate_t top_p,
+                                                    const coordinate_t bottom_left_p,
+                                                    const coordinate_t bottom_right_p,
                                                     const color_t color
                                                     )
   {
@@ -83,15 +83,15 @@ extern "C"
                                                 
 
   __declspec(dllexport) void HndlEngineDrawLine(
-                                                const point_t p1,
-                                                const point_t p2,
+                                                const coordinate_t p1,
+                                                const coordinate_t p2,
                                                 const color_t color)
   {
     EngineDrawLine(p1, p2, color);
   }
 
   __declspec(dllexport) void HndlEngineDrawPoint(
-                                                 const point_t p,
+                                                 const coordinate_t p,
                                                  const color_t color)
   {
     EngineDrawPoint(p, color);
