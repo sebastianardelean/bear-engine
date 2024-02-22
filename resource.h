@@ -1,5 +1,5 @@
-#ifndef RESOURCE_H
-#define RESOURCE_H
 
 
-#endif
+#define IDI_0                     200
+
+

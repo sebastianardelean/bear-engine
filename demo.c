@@ -14,8 +14,12 @@
 #include "debug.h"
 
 
+#include <gl\gl.h>
+#include <gl\glu.h>
+
 
 static HMODULE g_hEngineDll = NULL;
+
 
 
 /* ENGINE_DLL loaded functions */
@@ -27,6 +31,7 @@ static FARPROC HndlDrawLine = NULL;
 static FARPROC HndlDrawTriangle = NULL;
 static FARPROC HndlDrawQuad = NULL;
 static FARPROC HndlDrawPoint = NULL;
+static FARPROC HndlLoadTexture = NULL;
 
 static void Cleanup(void)
 {
@@ -38,6 +43,7 @@ static void Cleanup(void)
   HndlDrawTriangle = NULL;
   HndlDrawQuad = NULL;
   HndlDrawPoint = NULL;
+  HndlLoadTexture = NULL;
   if (g_hEngineDll)
   {
     (void)FreeLibrary(g_hEngineDll);
@@ -54,6 +60,7 @@ static void InitializeDllHandlers(void)
   HndlDrawTriangle = GetProcAddress(g_hEngineDll, "HndlEngineDrawTriangle");
   HndlDrawQuad = GetProcAddress(g_hEngineDll, "HndlEngineDrawQuad");
   HndlDrawPoint = GetProcAddress(g_hEngineDll, "HndlEngineDrawPoint");
+  HndlLoadTexture = GetProcAddress(g_hEngineDll, "HndlEngineLoadTexture");
   if (NULL == HndlCreateWindow || NULL == HndlRun)
   {
     Cleanup();
@@ -71,8 +78,10 @@ static void HndlSIGINT(int signal)
 
 static BOOL HndlDraw(void)
 {
+  
   if (HndlGetKeyState(VK_F1))
   {
+#if 1
     size_t i = 0;
     size_t j = 0;
     for (i = 0; i < SCREEN_WIDTH; i++)
@@ -84,7 +93,8 @@ static BOOL HndlDraw(void)
         HndlDrawPoint(p, color);
       }
     }
-    /*
+#endif
+#if 0
     point_t p1 = {0.0f, 0.0f, -1.0f};
     point_t p2 = {200.0f, 200.0f, -1.0f};
     color_t color = {rand()%255, rand()%255, rand()%255, 0};
@@ -104,9 +114,14 @@ static BOOL HndlDraw(void)
     point_t pq3 = {350.0f, 250.0f, -2.0f};
     point_t pq4 = {300.0f, 250.0f, -2.0f};
     color_t cq = {rand()%255, rand()%255, rand()%255, 0};
-
     HndlDrawQuad(pq1, pq2, pq3, pq4, cq);
-    */
+    
+    int i = HndlLoadTexture(L"ANA");
+    glBindTexture(GL_TEXTURE_2D, i);
+    
+
+
+#endif
     return TRUE;
   }
   return FALSE;

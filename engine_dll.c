@@ -17,7 +17,7 @@ extern void EngineDestroyWindow();
 
 /* Engine Window functions */
 extern INT EngineCreateWindow(
-                        char * cTitle,
+                        wchar_t * cTitle,
                         INT iWinWidth,
                         INT iWinHeight,
                         BOOL bFullScreen
@@ -49,90 +49,106 @@ extern void EngineDrawQuad(
                            const color_t color
                            );
 
-__declspec(dllexport) void HndlEngineDrawQuad(
-                                              const point_t top_left_p,
-                                              const point_t top_right_p,
-                                              const point_t bottom_right_p,
-                                              const point_t bottom_left_p,
-                                              const color_t color)
-{
-  EngineDrawQuad(top_left_p, top_right_p, bottom_right_p, bottom_left_p, color);
-}
+extern INT LoadGlTexture(wchar_t *sFilename);
 
-__declspec(dllexport) void HndlEngineDrawTriangle(
-                                                  const point_t top_p,
-                                                  const point_t bottom_left_p,
-                                                  const point_t bottom_right_p,
-                                                  const color_t color
-                                                  )
+
+#ifdef __cplusplus
+extern "C"
 {
-  EngineDrawTriangle(top_p, bottom_left_p, bottom_right_p, color);
-}
+#endif
+
+  __declspec(dllexport) INT HndlEngineLoadTexture(wchar_t *sFilename)
+  {
+    return LoadGlTexture(sFilename);
+  }
+  __declspec(dllexport) void HndlEngineDrawQuad(
+                                                const point_t top_left_p,
+                                                const point_t top_right_p,
+                                                const point_t bottom_right_p,
+                                                const point_t bottom_left_p,
+                                                const color_t color)
+  {
+    EngineDrawQuad(top_left_p, top_right_p, bottom_right_p, bottom_left_p, color);
+  }
+
+  __declspec(dllexport) void HndlEngineDrawTriangle(
+                                                    const point_t top_p,
+                                                    const point_t bottom_left_p,
+                                                    const point_t bottom_right_p,
+                                                    const color_t color
+                                                    )
+  {
+    EngineDrawTriangle(top_p, bottom_left_p, bottom_right_p, color);
+  }
                                                 
 
-__declspec(dllexport) void HndlEngineDrawLine(
-                                              const point_t p1,
-                                              const point_t p2,
-                                              const color_t color)
-{
-  EngineDrawLine(p1, p2, color);
-}
-
-__declspec(dllexport) void HndlEngineDrawPoint(
-                                               const point_t p,
-                                               const color_t color)
-{
-  EngineDrawPoint(p, color);
-}
-
-__declspec(dllexport) BOOL HndlEngineGetKeyState(BYTE bKeyCode)
-{
-  return EngineGetKeyState(bKeyCode);
-}
-
-__declspec(dllexport) INT HndlEngineCreateWindow()
-{
-  EngineCreateWindow(
-               L"Bear Engine",
-               SCREEN_WIDTH,
-               SCREEN_HEIGHT,
-               FULL_SCREEN
-               );
-  return 0;
-}
-
-
-__declspec(dllexport) void HndlEngineRun(BOOL (*FctDraw)(void))
-{
-  MSG msg;
-  BOOL bDone = FALSE;
-  EngineDrawScene();
-  while(!bDone)
+  __declspec(dllexport) void HndlEngineDrawLine(
+                                                const point_t p1,
+                                                const point_t p2,
+                                                const color_t color)
   {
-    if(PeekMessage(&msg, NULL, 0,0, PM_REMOVE))
+    EngineDrawLine(p1, p2, color);
+  }
+
+  __declspec(dllexport) void HndlEngineDrawPoint(
+                                                 const point_t p,
+                                                 const color_t color)
+  {
+    EngineDrawPoint(p, color);
+  }
+  
+  __declspec(dllexport) BOOL HndlEngineGetKeyState(BYTE bKeyCode)
+  {
+    return EngineGetKeyState(bKeyCode);
+  }
+
+  __declspec(dllexport) INT HndlEngineCreateWindow()
+  {
+    EngineCreateWindow(
+                       L"Bear Engine",
+                       SCREEN_WIDTH,
+                       SCREEN_HEIGHT,
+                       FULL_SCREEN
+                       );
+    return 0;
+  }
+
+
+  __declspec(dllexport) void HndlEngineRun(BOOL (*FctDraw)(void))
+  {
+    MSG msg;
+    BOOL bDone = FALSE;
+    EngineDrawScene();
+    while(!bDone)
     {
-      if (msg.message==WM_QUIT)
+      if(PeekMessage(&msg, NULL, 0,0, PM_REMOVE))
       {
-        bDone = TRUE;
+        if (msg.message==WM_QUIT)
+        {
+          bDone = TRUE;
+        }
+        else
+        {
+          TranslateMessage(&msg);
+          DispatchMessage(&msg);
+        }
       }
       else
       {
-        TranslateMessage(&msg);
-        DispatchMessage(&msg);
+        //Draw the scene
+        if(FctDraw())
+        {
+          EngineDrawScene();
+        }
       }
     }
-    else
-    {
-      //Draw the scene
-      if(FctDraw())
-      {
-        EngineDrawScene();
-      }
-    }
+    EngineDestroyWindow();
   }
-  EngineDestroyWindow();
-}
                                                     
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
+
 
 BOOL APIENTRY DllMain(HINSTANCE hModule, DWORD ulReasonForCall, LPVOID lpReserved)
 {
