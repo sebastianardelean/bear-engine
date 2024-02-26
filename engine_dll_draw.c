@@ -13,32 +13,50 @@
   (out).z = (in).z;                                         \
   } while (0)
 
+/* Functions defined in engine_dll_texture.c */
 
+extern void EngineLoadSpriteFromResource(
+  DWORD dwResourceId,
+  flip_t flip,
+  sprite_t *sprite
+  );
+
+
+/* Functions defined in engine_dll_draw.c */
 extern void EngineDrawPoint(
-                            const coordinate_t p,
-                            const color_t color
-                            );
+    const coordinate_t p,
+    const color_t color
+    );
 
 extern void EngineDrawLine(
-                           const coordinate_t p1,
-                           const coordinate_t p2,
-                           const color_t color
-                           );
+    const coordinate_t p1,
+    const coordinate_t p2,
+    const color_t color
+    );
 
 extern void EngineDrawTriangle(
-                               const coordinate_t top_p,
-                               const coordinate_t bottom_left_p,
-                               const coordinate_t bottom_right_p,
-                               const color_t color
-                               );
+    const coordinate_t top_p,
+    const coordinate_t bottom_left_p,
+    const coordinate_t bottom_right_p,
+    const color_t color
+    );
 
 extern void EngineDrawQuad(
-                           const coordinate_t top_left_p,
-                           const coordinate_t top_right_p,
-                           const coordinate_t bottom_right_p,
-                           const coordinate_t bottom_left_p,
-                           const color_t color
-                           );
+    const coordinate_t top_left_p,
+    const coordinate_t top_right_p,
+    const coordinate_t bottom_right_p,
+    const coordinate_t bottom_left_p,
+    const color_t color
+    );
+
+extern void EngineDrawSprite(
+    INT32 x,
+    INT32 y,
+    DWORD scale,
+    DWORD dwResourceId,
+    flip_t flip
+    );
+
 
 void EngineDrawPoint(
                             const coordinate_t p,
@@ -129,4 +147,93 @@ void EngineDrawQuad(
   glVertex3f(m_p4.x, m_p4.y, m_p4.z);
   glEnd();
   
+}
+
+void EngineDrawSprite(
+  INT32 x,
+  INT32 y,
+  DWORD scale,
+  DWORD dwResourceId,
+  flip_t flip)
+{
+  sprite_t sprite;
+
+  INT32 fxs = 0;
+  INT32 fys = 0;
+  INT32 fxm = 1;
+  INT32 fym = 1;
+  INT32 fx = 0;
+  INT32 fy = 0;
+
+  INT32 i = 0;
+  INT32 j = 0;
+  DWORD is = 0;
+  DWORD js = 0;
+
+  EngineLoadSpriteFromResource(dwResourceId,flip, &sprite);
+#if 1
+  for (i = 0; i < sprite.width; i++)
+  {
+    for (j = 0; j < sprite.height; j++)
+    {
+      coordinate_t p = {
+        (float)(x + (i * scale)),
+        (float)(y + (j * scale)),
+        -2.0f
+      };
+      
+      //DEBUG_W(L"Point coordinate %f %f", p.x, p.y);
+      EngineDrawPoint(p,sprite.pixels[j*sprite.width+i].color); 
+    }
+  }
+#endif  
+#if 0
+  if (sprite.flip == FLIP_HORIZONTAL)
+  {
+    fxs = sprite.width - 1;
+    fxm = -1;
+  }
+  
+  if (sprite.flip == FLIP_VERTICAL)
+  {
+    fys = sprite.height - 1;
+    fym = -1;
+  }
+
+  if (scale > 1)
+  {
+    fx = fxs;
+    for (i = 0; i < sprite.width; i++, fx += fxm)
+    {
+      fy = fys;
+      for (j = 0; j < sprite.height; j++, fy += fym)
+      {
+        for (is = 0; is < scale; is++)
+        {
+          for (js = 0; js < scale; js++)
+          {
+            coordinate_t p = {
+              (x + (i * scale) + is),
+              (y + (j * scale) + js),
+              -1
+            };
+
+            //DEBUG_W(L"Point coordinate %f %f", p.x, p.y);
+            EngineDrawPoint(p,sprite.pixels[i*fx+fy]); 
+          }
+        }
+      }
+    }
+  }
+#endif
+#if 0
+    DEBUG_W(L"Sprite  %d x %d Data \n", sprite.width, sprite.height);
+
+
+    for (i = 0; i < (sprite.width*sprite.height); i++)
+    {
+        DEBUG_W(L"%u %u %u", sprite.pixels[i].color.r,
+                sprite.pixels[i].color.g, sprite.pixels[i].color.b);
+    }
+#endif
 }

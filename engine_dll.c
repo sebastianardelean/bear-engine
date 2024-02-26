@@ -17,82 +17,102 @@ extern void EngineDestroyWindow();
 
 /* Engine Window functions */
 extern INT EngineCreateWindow(
-                        wchar_t * cTitle,
-                        INT iWinWidth,
-                        INT iWinHeight,
-                        BOOL bFullScreen
-                        );
+  wchar_t * cTitle,
+  INT iWinWidth,
+  INT iWinHeight,
+  BOOL bFullScreen
+  );
+
 extern BOOL EngineGetKeyState(BYTE bKeyCode);
 
 /*Engine draw Functions*/
 extern void EngineDrawScene();
+
 extern void EngineDrawPoint(
-                            const coordinate_t p,
-                            const color_t color);
+  const coordinate_t p,
+  const color_t color
+  );
+
 extern void EngineDrawLine(
-                           const coordinate_t p1,
-                           const coordinate_t p2,
-                           const color_t color);
+  const coordinate_t p1,
+  const coordinate_t p2,
+  const color_t color
+  );
 
 extern void EngineDrawTriangle(
-                               const coordinate_t top_p,
-                               const coordinate_t bottom_left_p,
-                               const coordinate_t bottom_right_p,
-                               const color_t color
-                               );
+  const coordinate_t top_p,
+  const coordinate_t bottom_left_p,
+  const coordinate_t bottom_right_p,
+  const color_t color
+  );
 
 extern void EngineDrawQuad(
-                           const coordinate_t top_left_p,
-                           const coordinate_t top_right_p,
-                           const coordinate_t bottom_right_p,
-                           const coordinate_t bottom_left_p,
-                           const color_t color
-                           );
+  const coordinate_t top_left_p,
+  const coordinate_t top_right_p,
+  const coordinate_t bottom_right_p,
+  const coordinate_t bottom_left_p,
+  const color_t color
+  );
 
-extern INT LoadGlTexture(wchar_t *sFilename);
 
+
+extern void EngineDrawSprite(
+  INT32 x,
+  INT32 y,
+  DWORD scale,
+  DWORD dwResourceId,
+  flip_t flip
+  );
 
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 
-  __declspec(dllexport) INT HndlEngineLoadTexture(wchar_t *sFilename)
+  __declspec(dllexport) void HndlEngineDrawSprite(
+    INT32 x,
+    INT32 y,
+    DWORD scale,
+    DWORD dwResourceId,
+    flip_t flip
+    )
   {
-    return LoadGlTexture(sFilename);
+    EngineDrawSprite(x,y,scale,dwResourceId,flip);  
   }
+    
+
   __declspec(dllexport) void HndlEngineDrawQuad(
-                                                const coordinate_t top_left_p,
-                                                const coordinate_t top_right_p,
-                                                const coordinate_t bottom_right_p,
-                                                const coordinate_t bottom_left_p,
-                                                const color_t color)
+    const coordinate_t top_left_p,
+    const coordinate_t top_right_p,
+    const coordinate_t bottom_right_p,
+    const coordinate_t bottom_left_p,
+    const color_t color)
   {
     EngineDrawQuad(top_left_p, top_right_p, bottom_right_p, bottom_left_p, color);
   }
 
   __declspec(dllexport) void HndlEngineDrawTriangle(
-                                                    const coordinate_t top_p,
-                                                    const coordinate_t bottom_left_p,
-                                                    const coordinate_t bottom_right_p,
-                                                    const color_t color
-                                                    )
+    const coordinate_t top_p,
+    const coordinate_t bottom_left_p,
+    const coordinate_t bottom_right_p,
+    const color_t color
+    )
   {
     EngineDrawTriangle(top_p, bottom_left_p, bottom_right_p, color);
   }
                                                 
 
   __declspec(dllexport) void HndlEngineDrawLine(
-                                                const coordinate_t p1,
-                                                const coordinate_t p2,
-                                                const color_t color)
+    const coordinate_t p1,
+    const coordinate_t p2,
+    const color_t color)
   {
     EngineDrawLine(p1, p2, color);
   }
 
   __declspec(dllexport) void HndlEngineDrawPoint(
-                                                 const coordinate_t p,
-                                                 const color_t color)
+    const coordinate_t p,
+    const color_t color)
   {
     EngineDrawPoint(p, color);
   }
@@ -105,11 +125,11 @@ extern "C"
   __declspec(dllexport) INT HndlEngineCreateWindow()
   {
     EngineCreateWindow(
-                       L"Bear Engine",
-                       SCREEN_WIDTH,
-                       SCREEN_HEIGHT,
-                       FULL_SCREEN
-                       );
+      L"Bear Engine",
+      SCREEN_WIDTH,
+      SCREEN_HEIGHT,
+      FULL_SCREEN
+      );
     return 0;
   }
 
