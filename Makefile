@@ -6,11 +6,11 @@ CFLAGS = /W3
 
 DBGCFLAGS = $(CFLAGS) /DDEBUG /Zi /W3 # temporarly not Wall
 
-RELCFLAGS = $(CFLAGS) /0x
+RELCFLAGS = $(CFLAGS)
 
 
 EXE_SRC = demo.c
-DLL_SRC = engine_dll.c engine_dll_error.c engine_dll_window.c engine_dll_core.c engine_dll_draw.c
+DLL_SRC = engine_dll.c engine_dll_error.c engine_dll_window.c engine_dll_core.c engine_dll_draw.c engine_dll_texture.c
 RES_FILE = engine_resources.rc
 
 
@@ -20,15 +20,17 @@ RELDIR = release
 EXE_NAME = demo.exe
 DLL_NAME = bengine_dll.dll
 
+LIBS = user32.lib opengl32.lib Gdi32.lib Glu32.lib
+
 all: clean debug release
 
 debug: prep resource demo.c
-	$(CC) $(DBGCFLAGS) $(EXE_SRC) /link user32.lib opengl32.lib Gdi32.lib Glu32.lib /out:$(DBGDIR)/$(EXE_NAME)
-	$(CC) $(DBGCFLAGS) $(DLL_SRC) /LD /link user32.lib opengl32.lib Gdi32.lib Glu32.lib /DEF:engine_dll.def /out:$(DBGDIR)/$(DLL_NAME)
+	$(CC) $(DBGCFLAGS) $(EXE_SRC) $(RES_FILE).res /link $(LIBS) /out:$(DBGDIR)/$(EXE_NAME)
+	$(CC) $(DBGCFLAGS) $(DLL_SRC) /LD /link $(LIBS) /DEF:engine_dll.def /out:$(DBGDIR)/$(DLL_NAME)
 
 release: prep resource demo.c
-	$(CC) $(RELCFLAGS) $(EXE_SRC) /link user32.lib opengl32.lib Gdi32.lib Glu32.lib /out:$(RELDIR)/$(EXE_NAME)	
-	$(CC) $(RELCFLAGS) $(DLL_SRC) /LD /link user32.lib opengl32.lib Gdi32.lib Glu32.lib /DEF:engine_dll.def /out:$(RELDIR)/$(DLL_NAME)
+	$(CC) $(RELCFLAGS) $(EXE_SRC) $(RES_FILE).res /link $(LIBS) /out:$(RELDIR)/$(EXE_NAME)	
+	$(CC) $(RELCFLAGS) $(DLL_SRC) /LD /link $(LIBS) /DEF:engine_dll.def /out:$(RELDIR)/$(DLL_NAME)
 
 resource: $(RES_FILE)
 	$(RC) /fo $(RES_FILE).res $(RES_FILE)

@@ -7,3 +7,4 @@ HndlEngineDrawLine
 HndlEngineDrawTriangle
 HndlEngineDrawQuad
 HndlEngineDrawPoint
+HndlEngineDrawSprite

@@ -1,6 +1,8 @@
 #include <Windows.h>
 #include <gl/GL.h>
 #include <gl/glu.h>
+
+
 #include "configuration.h"
 #include "debug.h"
 
@@ -18,12 +20,16 @@ static BOOL g_bFullScreen = FALSE;
 static HDC g_hDC = NULL;
 static HGLRC g_hRC = NULL;
 
-static HINSTANCE g_hInstance = NULL; //instance of the application
 
+
+
+
+
+static HINSTANCE g_hInstance = NULL;
 
 
 extern INT EngineCreateWindow(
-                        char * cTitle,
+                              wchar_t * cTitle,
                         INT iWinWidth,
                         INT iWinHeight,
                         BOOL bFullScreen
@@ -40,7 +46,7 @@ static GLvoid ResizeGLScene(GLsizei width, GLsizei height);
 
 
 
-INT EngineCreateWindow(char *cTitle,
+INT EngineCreateWindow(wchar_t *cTitle,
                        INT iWinWidth,
                        INT iWinHeight,
                        BOOL bFullScreen
@@ -51,6 +57,8 @@ INT EngineCreateWindow(char *cTitle,
   DWORD dwExStyle;
   DWORD dwStyle;
   RECT rWindowRect;
+
+
 
   rWindowRect.left = (DWORDLONG)0;
   rWindowRect.right = (DWORDLONG)iWinWidth;
@@ -64,6 +72,9 @@ INT EngineCreateWindow(char *cTitle,
     return GetLastError();
   }
 
+
+
+  
   wc.style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
   wc.lpfnWndProc = (WNDPROC) WndProc;		
   wc.cbClsExtra = 0;				
@@ -196,6 +207,7 @@ INT EngineCreateWindow(char *cTitle,
 
 void EngineDestroyWindow()
 {
+
   if (g_bFullScreen)
   {
     ChangeDisplaySettings(NULL,0);
@@ -249,6 +261,7 @@ void EngineDrawScene()
 
 GLvoid InitGL(GLvoid)
 {
+  glEnable(GL_TEXTURE_2D);
   glShadeModel(GL_SMOOTH);							// Enable Smooth Shading
   glClearColor(0.0f, 0.0f, 0.0f, 0.5f);				// Black Background
   glClearDepth(1.0f);									// Depth Buffer Setup
