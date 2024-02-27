@@ -8,3 +8,10 @@ Run `nmake`
 
 
 [nehe src github](https://github.com/gamedev-net/nehe-opengl/blob/master/vc/Lesson01/Lesson1.cpp)
+
+
+
+## TODO
+
+1. Create the windows dll with only the windows specific APIs in C
+2. Rewrite in C++
