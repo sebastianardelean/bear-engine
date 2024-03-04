@@ -81,7 +81,7 @@ static BOOL HndlDraw(void)
 
     if (HndlGetKeyState(VK_F1))
     {
-      #if 0
+      #if 1
         HndlDrawSprite(
             100,
             100,
@@ -89,7 +89,7 @@ static BOOL HndlDraw(void)
             200,
             (flip_t)0);
         #endif
-#if 1
+#if 0
         size_t i = 0;
         size_t j = 0;
         for (i = 0; i < SCREEN_WIDTH; i++)

@@ -16,7 +16,7 @@
 extern void EngineLoadSpriteFromResource(
   const DWORD dwResourceId,
   const flip_t flip,
-  const sprite_t *sprite
+  sprite_t *sprite
   );
 
 

@@ -7,19 +7,19 @@
 
 
 static INT EngineLoadResource(
-  DWORD dwResourceId,
+  const DWORD dwResourceId,
   HBITMAP *ptr_hBitmap
   );
 
 extern void EngineLoadSpriteFromResource(
   const DWORD dwResourceId,
   const flip_t flip,
-  const sprite_t *sprite
+  sprite_t *sprite
   );
 
 
 INT EngineLoadResource(
-  DWORD dwResourceId,
+  const DWORD dwResourceId,
   HBITMAP *ptr_hBitmap
   )
 {
@@ -29,11 +29,11 @@ INT EngineLoadResource(
                                    IMAGE_BITMAP,
                                    0, 0,
                                    LR_CREATEDIBSECTION);
-  /*if (NULL == *ptr_hBitmap)
+  if (NULL == *ptr_hBitmap)
   {
     DEBUG_W(L"Failed to load bitmap %ld", GetLastError());
     return -1;
-  }*/
+  }
   return 0;
 }
 
@@ -42,10 +42,10 @@ INT EngineLoadResource(
 void EngineLoadSpriteFromResource(
   const DWORD dwResourceId,
   const flip_t flip,
-  const sprite_t *sprite  
+  sprite_t *sprite  
   )
 {
-  /*BITMAP bitmap;
+  BITMAP bitmap;
   HBITMAP hBitmap = NULL;
   size_t i = 0;
   if (0 == EngineLoadResource(dwResourceId, &hBitmap))
@@ -80,7 +80,7 @@ void EngineLoadSpriteFromResource(
         DIB_RGB_COLORS
         );
 
-      sprite->pixels = malloc(sizeof(COLORREF)*(sprite->width * sprite->height));
+      sprite->pixels = (pixel_t*)malloc(sizeof(COLORREF)*(sprite->width * sprite->height));
       if (sprite->pixels != NULL)
       {
         for (i = 0; i < (sprite->width * sprite->height); i++)
@@ -96,7 +96,7 @@ void EngineLoadSpriteFromResource(
     free(pixel);
     DeleteObject(hBitmap);
 
-  }*/
+  }
 }
 
 
@@ -105,7 +105,7 @@ void EngineLoadSpriteFromResource(
 
 void DeleteGlTexture(HBITMAP *hBitmap)
 {
-    //DeleteObject(*hBitmap);
+    DeleteObject(*hBitmap);
 }
 
 
