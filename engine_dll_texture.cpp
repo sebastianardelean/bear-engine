@@ -1,10 +1,6 @@
-#include <Windows.h>
-#include <gl\gl.h>
-#include <gl\glu.h>
-#include <stdlib.h>
-#include <string.h>
+#include "framework.h"
 #include "engine_types.h"
-//#include "resource.h"
+
 #include "debug.h"
 
 
@@ -40,6 +36,8 @@ INT EngineLoadResource(
   }*/
   return 0;
 }
+
+
 
 void EngineLoadSpriteFromResource(
   const DWORD dwResourceId,

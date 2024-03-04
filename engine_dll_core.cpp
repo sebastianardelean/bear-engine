@@ -1,4 +1,4 @@
-#include <Windows.h>
+#include "framework.h"
 
 
 BOOL g_baKeys[256] = {0};

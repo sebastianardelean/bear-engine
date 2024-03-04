@@ -1,6 +1,4 @@
-#include <Windows.h>
-#include <gl/GL.h>
-#include <gl/glu.h>
+#include "framework.h"
 #include "configuration.h"
 #include "engine_types.h"
 

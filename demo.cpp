@@ -4,10 +4,10 @@
  */
 
 #include <Windows.h>
-#include <stdlib.h>
-#include <signal.h>
+#include <cstdlib>
+#include <csignal>
 
-#include <stdlib.h>
+#
 #include "engine_types.h"
 
 #include "configuration.h"

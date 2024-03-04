@@ -1,8 +1,4 @@
-#include <Windows.h>
-#include <gl/GL.h>
-#include <gl/glu.h>
-
-
+#include "framework.h"
 #include "configuration.h"
 #include "debug.h"
 
@@ -19,11 +15,6 @@ static HWND g_hWnd = NULL;
 static BOOL g_bFullScreen = FALSE;
 static HDC g_hDC = NULL;
 static HGLRC g_hRC = NULL;
-
-
-
-
-
 
 static HINSTANCE g_hInstance = NULL;
 
@@ -58,8 +49,9 @@ INT EngineCreateWindow(const wchar_t *cTitle,
   DWORD dwStyle;
   RECT rWindowRect;
 
+ 
 
-
+  
   rWindowRect.left = (DWORDLONG)0;
   rWindowRect.right = (DWORDLONG)iWinWidth;
   rWindowRect.top = (DWORDLONG)0;

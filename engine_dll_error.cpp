@@ -1,5 +1,5 @@
-#include <Windows.h>
-#include <stdio.h>
+#include "framework.h"
+
 
 extern void ReportError(const wchar_t *sMessage);
 
