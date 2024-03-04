@@ -16,9 +16,9 @@
 /* Functions defined in engine_dll_texture.c */
 
 extern void EngineLoadSpriteFromResource(
-  DWORD dwResourceId,
-  flip_t flip,
-  sprite_t *sprite
+  const DWORD dwResourceId,
+  const flip_t flip,
+  const sprite_t *sprite
   );
 
 
@@ -50,11 +50,11 @@ extern void EngineDrawQuad(
     );
 
 extern void EngineDrawSprite(
-    INT32 x,
-    INT32 y,
-    DWORD scale,
-    DWORD dwResourceId,
-    flip_t flip
+    const INT32 x,
+    const INT32 y,
+    const DWORD scale,
+    const DWORD dwResourceId,
+    const flip_t flip
     );
 
 
@@ -71,7 +71,10 @@ void EngineDrawPoint(
 }
 
 
-void EngineDrawLine(coordinate_t p1, coordinate_t p2, color_t color)
+void EngineDrawLine(
+    const coordinate_t p1, 
+    const coordinate_t p2, 
+    const color_t color)
 {
 
   coordinate_t m_p1;
@@ -150,11 +153,11 @@ void EngineDrawQuad(
 }
 
 void EngineDrawSprite(
-  INT32 x,
-  INT32 y,
-  DWORD scale,
-  DWORD dwResourceId,
-  flip_t flip)
+  const INT32 x,
+  const INT32 y,
+  const DWORD scale,
+  const DWORD dwResourceId,
+  const flip_t flip)
 {
   sprite_t sprite;
 

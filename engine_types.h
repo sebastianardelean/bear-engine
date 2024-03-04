@@ -43,4 +43,44 @@ typedef struct
 }sprite_t;
 
 
+typedef void(FAR WINAPI* FARPROC_ENGINE_DRAW_SPRITE)(
+	const INT32, 
+	const INT32, 
+	const DWORD, 
+	const DWORD, 
+	const flip_t);
+
+
+typedef void(FAR WINAPI* FARPROC_ENGINE_DRAW_QUAD)(
+	const coordinate_t,
+	const coordinate_t,
+	const coordinate_t,
+	const coordinate_t,
+	const color_t);
+
+typedef void(FAR WINAPI* FARPROC_ENGINE_DRAW_TRIANGLE)(
+	const coordinate_t,
+	const coordinate_t,
+	const coordinate_t,
+	const color_t
+	);	
+
+
+typedef void(FAR WINAPI* FARPROC_ENGINE_DRAW_LINE)(
+	const coordinate_t,
+	const coordinate_t,
+	const color_t
+	);
+
+typedef void(FAR WINAPI* FARPROC_ENGINE_DRAW_POINT)(
+	const coordinate_t,
+	const color_t
+	);
+
+typedef BOOL(FAR WINAPI* FARPROC_ENGINE_KEY_STATE)(BYTE);
+
+typedef INT_PTR(FAR WINAPI * FARPROC_ENGINE_INIT)(void); 
+
+typedef void(FAR WINAPI* FARPROC_ENGINE_RUN)(BOOL(*FctDraw)(void));
+
 #endif

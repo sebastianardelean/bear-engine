@@ -3,7 +3,7 @@
 
 BOOL g_baKeys[256] = {0};
 
-extern BOOL EngineGetKeyState(BYTE bKeyCode);
+extern BOOL EngineGetKeyState(const BYTE bKeyCode);
 
 extern LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
@@ -40,7 +40,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
   return DefWindowProc(hWnd, uMsg, wParam, lParam);
 }
 
-BOOL EngineGetKeyState(BYTE bKeyCode)
+BOOL EngineGetKeyState(const BYTE bKeyCode)
 {
   BOOL bKeyState = g_baKeys[bKeyCode];
   g_baKeys[bKeyCode] = FALSE;

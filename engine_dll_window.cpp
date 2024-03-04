@@ -11,7 +11,7 @@
 
 /* Functions defined in other modules. */
 
-extern void ReportError(wchar_t* sMessage);
+extern void ReportError(const wchar_t* sMessage);
 extern LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 /* Functions defined in this module. */
@@ -29,10 +29,10 @@ static HINSTANCE g_hInstance = NULL;
 
 
 extern INT EngineCreateWindow(
-                              wchar_t * cTitle,
-                        INT iWinWidth,
-                        INT iWinHeight,
-                        BOOL bFullScreen
+                        const wchar_t * cTitle,
+                        const INT iWinWidth,
+                        const INT iWinHeight,
+                        const BOOL bFullScreen
                         );
 
 extern void EngineDestroyWindow();
@@ -46,14 +46,14 @@ static GLvoid ResizeGLScene(GLsizei width, GLsizei height);
 
 
 
-INT EngineCreateWindow(wchar_t *cTitle,
-                       INT iWinWidth,
-                       INT iWinHeight,
-                       BOOL bFullScreen
+INT EngineCreateWindow(const wchar_t *cTitle,
+                       const INT iWinWidth,
+                       const INT iWinHeight,
+                       const BOOL bFullScreen
                  )
 {
   GLuint PixelFormat = 0 ;
-  WNDCLASS wc;
+  WNDCLASS wc = {};
   DWORD dwExStyle;
   DWORD dwStyle;
   RECT rWindowRect;
@@ -84,7 +84,7 @@ INT EngineCreateWindow(wchar_t *cTitle,
   wc.hCursor = LoadCursor(NULL, IDC_ARROW);	
   wc.hbrBackground = NULL;			
   wc.lpszMenuName = NULL;			
-  wc.lpszClassName = "TheBear";			
+  wc.lpszClassName = cTitle;			
 
   if (!RegisterClass(&wc))
   {
@@ -126,8 +126,8 @@ INT EngineCreateWindow(wchar_t *cTitle,
 
   /*Create Window*/
   g_hWnd = CreateWindowEx(dwExStyle,
-                          "TheBear",
-                          "TheBear Engine",
+                          cTitle,
+                          cTitle,
                           dwStyle | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,
                           0,
                           0,
@@ -243,7 +243,7 @@ void EngineDestroyWindow()
     g_hWnd=NULL;										// Set hWnd To NULL
   }
 
-  if (!UnregisterClass("OpenGL",g_hInstance))			// Are We Able To Unregister Class
+  if (!UnregisterClass(L"OpenGL",g_hInstance))			// Are We Able To Unregister Class
   {
     ReportError(L"Could not unregister instance");
     g_hInstance=NULL;									// Set hInstance To NULL

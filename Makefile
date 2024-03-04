@@ -2,15 +2,15 @@ CC = cl
 LINKER = link
 RC = rc
 
-CFLAGS = /W3
+CFLAGS = /W3 /D_UNICODE /DUNICODE
 
 DBGCFLAGS = $(CFLAGS) /DDEBUG /Zi /W3 # temporarly not Wall
 
 RELCFLAGS = $(CFLAGS)
 
 
-EXE_SRC = demo.c
-DLL_SRC = engine_dll.c engine_dll_error.c engine_dll_window.c engine_dll_core.c engine_dll_draw.c engine_dll_texture.c
+EXE_SRC = demo.cpp
+DLL_SRC = engine_dll.cpp engine_dll_error.cpp engine_dll_window.cpp engine_dll_core.cpp engine_dll_draw.cpp engine_dll_texture.cpp
 RES_FILE = engine_resources.rc
 
 
@@ -24,13 +24,13 @@ LIBS = user32.lib opengl32.lib Gdi32.lib Glu32.lib
 
 all: clean debug release
 
-debug: prep resource demo.c
+debug: prep resource demo.cpp
 	$(CC) $(DBGCFLAGS) $(EXE_SRC) $(RES_FILE).res /link $(LIBS) /out:$(DBGDIR)/$(EXE_NAME)
-	$(CC) $(DBGCFLAGS) $(DLL_SRC) /LD /link $(LIBS) /DEF:engine_dll.def /out:$(DBGDIR)/$(DLL_NAME)
+	$(CC) $(DBGCFLAGS) /D_WINDLL $(DLL_SRC) /LD /link $(LIBS) /DEF:engine_dll.def /out:$(DBGDIR)/$(DLL_NAME)
 
-release: prep resource demo.c
+release: prep resource demo.cpp
 	$(CC) $(RELCFLAGS) $(EXE_SRC) $(RES_FILE).res /link $(LIBS) /out:$(RELDIR)/$(EXE_NAME)	
-	$(CC) $(RELCFLAGS) $(DLL_SRC) /LD /link $(LIBS) /DEF:engine_dll.def /out:$(RELDIR)/$(DLL_NAME)
+	$(CC) $(RELCFLAGS) /D_WINDLL $(DLL_SRC) /LD /link $(LIBS) /DEF:engine_dll.def /out:$(RELDIR)/$(DLL_NAME)
 
 resource: $(RES_FILE)
 	$(RC) /fo $(RES_FILE).res $(RES_FILE)

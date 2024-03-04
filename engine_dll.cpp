@@ -1,4 +1,4 @@
-#include <Windows.h>
+#include "targetver.h"
 #include "configuration.h"
 #include "engine_types.h"
 #include "debug.h"
@@ -17,10 +17,10 @@ extern void EngineDestroyWindow();
 
 /* Engine Window functions */
 extern INT EngineCreateWindow(
-  wchar_t * cTitle,
-  INT iWinWidth,
-  INT iWinHeight,
-  BOOL bFullScreen
+  const wchar_t * cTitle,
+  const INT iWinWidth,
+  const INT iWinHeight,
+  const BOOL bFullScreen
   );
 
 extern BOOL EngineGetKeyState(BYTE bKeyCode);
@@ -124,13 +124,13 @@ extern "C"
 
   __declspec(dllexport) INT HndlEngineCreateWindow()
   {
-    EngineCreateWindow(
+    return EngineCreateWindow(
       L"Bear Engine",
       SCREEN_WIDTH,
       SCREEN_HEIGHT,
       FULL_SCREEN
       );
-    return 0;
+   
   }
 
 
