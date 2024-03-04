@@ -1,19 +1,19 @@
 #include <Windows.h>
 #include <stdio.h>
 
-extern void ReportError(wchar_t *sMessage);
+extern void ReportError(const wchar_t *sMessage);
 
-extern void ReportWin32Error(wchar_t* sMessage);
+extern void ReportWin32Error(const wchar_t* sMessage);
 
 
 
-void ReportError(wchar_t *sMessage)
+void ReportError(const wchar_t *sMessage)
 {
   wprintf(L"[!] Error: %s\n", sMessage);
 }
 
 
-void ReportWin32Error(wchar_t *sMessage)
+void ReportWin32Error(const wchar_t *sMessage)
 {
   DWORD dwErr = GetLastError();
 

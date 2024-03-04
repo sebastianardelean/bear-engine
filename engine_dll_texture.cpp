@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "engine_types.h"
-#include "resource.h"
+//#include "resource.h"
 #include "debug.h"
 
 
@@ -16,9 +16,9 @@ static INT EngineLoadResource(
   );
 
 extern void EngineLoadSpriteFromResource(
-  DWORD dwResourceId,
-  flip_t flip,
-  sprite_t *sprite
+  const DWORD dwResourceId,
+  const flip_t flip,
+  const sprite_t *sprite
   );
 
 
@@ -33,21 +33,21 @@ INT EngineLoadResource(
                                    IMAGE_BITMAP,
                                    0, 0,
                                    LR_CREATEDIBSECTION);
-  if (NULL == *ptr_hBitmap)
+  /*if (NULL == *ptr_hBitmap)
   {
     DEBUG_W(L"Failed to load bitmap %ld", GetLastError());
     return -1;
-  }
+  }*/
   return 0;
 }
 
 void EngineLoadSpriteFromResource(
-  DWORD dwResourceId,
-  flip_t flip,
-  sprite_t *sprite  
+  const DWORD dwResourceId,
+  const flip_t flip,
+  const sprite_t *sprite  
   )
 {
-  BITMAP bitmap;
+  /*BITMAP bitmap;
   HBITMAP hBitmap = NULL;
   size_t i = 0;
   if (0 == EngineLoadResource(dwResourceId, &hBitmap))
@@ -98,7 +98,7 @@ void EngineLoadSpriteFromResource(
     free(pixel);
     DeleteObject(hBitmap);
 
-  }
+  }*/
 }
 
 
@@ -107,13 +107,13 @@ void EngineLoadSpriteFromResource(
 
 void DeleteGlTexture(HBITMAP *hBitmap)
 {
-    DeleteObject(*hBitmap);
+    //DeleteObject(*hBitmap);
 }
 
 
 INT LoadGlTexture(wchar_t *sFilename)
 {
-  BITMAP bitmap;
+  /*BITMAP bitmap;
   HBITMAP hBitmap = NULL;
   GLuint iTextureId = 0;
 
@@ -135,7 +135,7 @@ INT LoadGlTexture(wchar_t *sFilename)
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
     return iTextureId;
-  }
+  }*/
 
   return -1;
   
