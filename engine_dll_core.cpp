@@ -1,7 +1,7 @@
 #include "framework.h"
 
 
-BOOL g_baKeys[256] = {0};
+static BOOL g_baKeys[256] = {0};
 
 extern BOOL EngineGetKeyState(const BYTE bKeyCode);
 

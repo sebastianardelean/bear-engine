@@ -7,11 +7,11 @@
 #include <cstdlib>
 #include <csignal>
 
-#
+#include <string>
 #include "engine_types.h"
 
 #include "configuration.h"
-#include "debug.h"
+
 
 
 #include <gl\gl.h>
@@ -81,14 +81,14 @@ static BOOL HndlDraw(void)
 
     if (HndlGetKeyState(VK_F1))
     {
-      #if 1
+#if 1
         HndlDrawSprite(
             100,
             100,
             1,
-            200,
-            (flip_t)0);
-        #endif
+            L"c:\\Users\\sardelean\\Documents\\workspace\\bear-graphic-engine\\NeHe.bmp",
+            FLIP_HORIZONTAL);
+#endif
 #if 0
         size_t i = 0;
         size_t j = 0;
@@ -136,17 +136,14 @@ static BOOL HndlDraw(void)
     return FALSE;
 }
 
-int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
-    _In_opt_ HINSTANCE hPrevInstance,
-    _In_ LPWSTR    lpCmdLine,
-    _In_ int       nCmdShow)
+int main(void)
 {
-    UNREFERENCED_PARAMETER(hPrevInstance);
+  
 
     SetProcessDPIAware();
 
-    //g_hEngineDll = LoadLibraryW(L"bear-engine-dll.dll");
-    g_hEngineDll = LoadLibraryW(L"bengine_dll");
+    g_hEngineDll = LoadLibraryW(L"bear-engine-dll.dll");
+    //g_hEngineDll = LoadLibraryW(L"bengine_dll");
 
     if (NULL == g_hEngineDll)
     {
@@ -159,11 +156,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     signal(SIGINT, HndlSIGINT);
 
-    if (HndlCreateWindow())
-    {
-      Cleanup();
-      return -1;
-    }
+    HndlCreateWindow();
 
     HndlRun(&HndlDraw);
 

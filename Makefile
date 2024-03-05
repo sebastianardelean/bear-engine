@@ -10,7 +10,7 @@ RELCFLAGS = $(CFLAGS)
 
 
 EXE_SRC = demo.cpp
-DLL_SRC = engine_dll.cpp engine_dll_error.cpp engine_dll_window.cpp engine_dll_core.cpp engine_dll_draw.cpp engine_dll_texture.cpp
+DLL_SRC = dllmain.cpp engine_dll_window.cpp engine_dll_core.cpp engine_dll_draw.cpp engine_dll_texture.cpp
 RES_FILE = engine_resources.rc
 
 

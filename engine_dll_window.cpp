@@ -1,26 +1,27 @@
 #include "framework.h"
 #include "configuration.h"
-#include "debug.h"
 
 
-#define BITS_PER_COLOR 32u
 
-/* Functions defined in other modules. */
 
-extern void ReportError(const wchar_t* sMessage);
-extern LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 /* Functions defined in this module. */
 static HWND g_hWnd = NULL;
 static BOOL g_bFullScreen = FALSE;
 static HDC g_hDC = NULL;
 static HGLRC g_hRC = NULL;
+static ULONG_PTR g_ptrGdiplusToken = 0;
+
+
 
 static HINSTANCE g_hInstance = NULL;
 
+static GLvoid InitGL(GLvoid);
+
+static GLvoid ResizeGLScene(GLsizei width, GLsizei height);
 
 extern INT EngineCreateWindow(
-                        const wchar_t * cTitle,
+                        const std::wstring & cTitle,
                         const INT iWinWidth,
                         const INT iWinHeight,
                         const BOOL bFullScreen
@@ -30,14 +31,12 @@ extern void EngineDestroyWindow();
 
 extern void EngineDrawScene();
 
-static GLvoid InitGL(GLvoid);
-
-static GLvoid ResizeGLScene(GLsizei width, GLsizei height);
+extern LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 
 
 
-INT EngineCreateWindow(const wchar_t *cTitle,
+INT EngineCreateWindow(const std::wstring &cTitle,
                        const INT iWinWidth,
                        const INT iWinHeight,
                        const BOOL bFullScreen
@@ -49,9 +48,15 @@ INT EngineCreateWindow(const wchar_t *cTitle,
   DWORD dwStyle;
   RECT rWindowRect;
 
- 
+  Gdiplus::GdiplusStartupInput gdiplusStartupInput;
 
-  
+  // Initialize GDI+.
+  if(Gdiplus::GdiplusStartup(&g_ptrGdiplusToken, &gdiplusStartupInput, NULL)!=0)
+  {
+    g_ptrGdiplusToken = NULL;
+    return GetLastError();
+  }
+   
   rWindowRect.left = (DWORDLONG)0;
   rWindowRect.right = (DWORDLONG)iWinWidth;
   rWindowRect.top = (DWORDLONG)0;
@@ -76,11 +81,11 @@ INT EngineCreateWindow(const wchar_t *cTitle,
   wc.hCursor = LoadCursor(NULL, IDC_ARROW);	
   wc.hbrBackground = NULL;			
   wc.lpszMenuName = NULL;			
-  wc.lpszClassName = cTitle;			
+  wc.lpszClassName = cTitle.c_str();			
 
   if (!RegisterClass(&wc))
   {
-    ReportError(L"Failed to register the Window Class.");
+    utils::ReportError(L"Failed to register the Window Class.");
     return GetLastError();
   }
 
@@ -96,7 +101,7 @@ INT EngineCreateWindow(const wchar_t *cTitle,
 
     if (ChangeDisplaySettings (&dmScreenSettings, CDS_FULLSCREEN) != DISP_CHANGE_SUCCESSFUL)
     {
-      ReportError(L"The requested fullscreen mode is not supported!");
+      utils::ReportError(L"The requested fullscreen mode is not supported!");
       g_bFullScreen = FALSE;
     }
       
@@ -118,8 +123,8 @@ INT EngineCreateWindow(const wchar_t *cTitle,
 
   /*Create Window*/
   g_hWnd = CreateWindowEx(dwExStyle,
-                          cTitle,
-                          cTitle,
+                          cTitle.c_str(),
+                          cTitle.c_str(),
                           dwStyle | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,
                           0,
                           0,
@@ -131,7 +136,7 @@ INT EngineCreateWindow(const wchar_t *cTitle,
                           NULL);
   if (NULL == g_hWnd)
   {
-    ReportError(L"Could not create window!");
+    utils::ReportError(L"Could not create window!");
     return GetLastError();
   }
 
@@ -157,31 +162,31 @@ INT EngineCreateWindow(const wchar_t *cTitle,
   g_hDC = GetDC(g_hWnd);
   if (NULL == g_hDC)
   {
-    ReportError(L"Could not get Device Context");
+    utils::ReportError(L"Could not get Device Context");
     return GetLastError();
   }
   PixelFormat = ChoosePixelFormat(g_hDC, &pfd);
   if (0 == PixelFormat)
   {
-    ReportError(L"PixelFormat");
+    utils::ReportError(L"PixelFormat");
     return GetLastError();
   }
 
   if(!SetPixelFormat(g_hDC, PixelFormat, &pfd))
   {
-    ReportError(L"SetPixelFormat");
+    utils::ReportError(L"SetPixelFormat");
     return GetLastError();
   }
 
   g_hRC = wglCreateContext(g_hDC);
   if (NULL == g_hRC)
   {
-    ReportError(L"wglCreateContext");
+    utils::ReportError(L"wglCreateContext");
     return GetLastError();
   }
   if(!wglMakeCurrent(g_hDC, g_hRC))
   {
-    ReportError(L"wglMakeCurrent");
+    utils::ReportError(L"wglMakeCurrent");
     return GetLastError();
   }
 
@@ -205,16 +210,20 @@ void EngineDestroyWindow()
     ChangeDisplaySettings(NULL,0);
     ShowCursor(TRUE);
   }
+  if (g_ptrGdiplusToken)
+  {
+    Gdiplus::GdiplusShutdown(g_ptrGdiplusToken);
+  }
 
   if (g_hRC)
   {
     if (!wglMakeCurrent(NULL, NULL))
     {
-      ReportError(L"Release of DC and RC failed");
+        utils::ReportError(L"Release of DC and RC failed");
     }
     if (!wglDeleteContext(g_hRC))
     {
-      ReportError(L"Render release failed");
+        utils::ReportError(L"Render release failed");
     }
     g_hRC = NULL;
   }
@@ -223,7 +232,7 @@ void EngineDestroyWindow()
   {
     if (0 == ReleaseDC(g_hWnd, g_hDC))
     {
-      ReportError(L"Release Device Context failed");
+        utils::ReportError(L"Release Device Context failed");
       g_hDC = NULL;
     }
   }
@@ -231,13 +240,13 @@ void EngineDestroyWindow()
   
   if (g_hWnd && !DestroyWindow(g_hWnd))					// Are We Able To Destroy The Window?
   {
-    ReportError(L"Failed to destroy Window");
+      utils::ReportError(L"Failed to destroy Window");
     g_hWnd=NULL;										// Set hWnd To NULL
   }
 
   if (!UnregisterClass(L"OpenGL",g_hInstance))			// Are We Able To Unregister Class
   {
-    ReportError(L"Could not unregister instance");
+      utils::ReportError(L"Could not unregister instance");
     g_hInstance=NULL;									// Set hInstance To NULL
   }
 }

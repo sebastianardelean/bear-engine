@@ -1,8 +1,8 @@
 #ifndef ENGINE_TYPES_H
 #define ENGINE_TYPES_H
 
-#include <Windows.h>
 
+#include <string>
 typedef struct
 {
   BYTE a;
@@ -30,7 +30,7 @@ typedef enum
 typedef union
 {
   color_t color;
-  COLORREF rgb;
+  DWORD rgb;
 }pixel_t;
 
 typedef struct
@@ -47,7 +47,7 @@ typedef void(FAR WINAPI* FARPROC_ENGINE_DRAW_SPRITE)(
 	const INT32, 
 	const INT32, 
 	const DWORD, 
-	const DWORD, 
+	const std::wstring &, 
 	const flip_t);
 
 

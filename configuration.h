@@ -9,7 +9,7 @@
 
 #define FULL_SCREEN 0
 
-
+#define BITS_PER_COLOR 32u
 
 
 #endif

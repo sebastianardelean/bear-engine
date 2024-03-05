@@ -2,7 +2,7 @@
 #include "configuration.h"
 #include "engine_types.h"
 
-#include "debug.h"
+
 
 #define NORMALIZE_3D(in, out) \
   do { \
@@ -13,11 +13,10 @@
 
 /* Functions defined in engine_dll_texture.c */
 
-extern void EngineLoadSpriteFromResource(
-  const DWORD dwResourceId,
-  const flip_t flip,
-  sprite_t *sprite
-  );
+extern void EngineLoadImageResource(
+    sprite_t * sprite,
+    const std::wstring & sImageFile
+);
 
 
 /* Functions defined in engine_dll_draw.c */
@@ -51,7 +50,7 @@ extern void EngineDrawSprite(
     const INT32 x,
     const INT32 y,
     const DWORD scale,
-    const DWORD dwResourceId,
+    const std::wstring & sFilePath,
     const flip_t flip
     );
 
@@ -154,7 +153,7 @@ void EngineDrawSprite(
   const INT32 x,
   const INT32 y,
   const DWORD scale,
-  const DWORD dwResourceId,
+  const std::wstring &sFilePath,
   const flip_t flip)
 {
   sprite_t sprite;
@@ -171,22 +170,22 @@ void EngineDrawSprite(
   DWORD is = 0;
   DWORD js = 0;
 
-  EngineLoadSpriteFromResource(dwResourceId,flip, &sprite);
+  EngineLoadImageResource(&sprite, sFilePath.c_str());
 #if 1
-  for (i = 0; i < sprite.width; i++)
+  for (j = 0; j < sprite.height; j++)
   {
-    for (j = 0; j < sprite.height; j++)
+    for (i = 0; i < sprite.height; i++)
     {
       coordinate_t p = {
-        (float)(x + (i * scale)),
-        (float)(y + (j * scale)),
+        (float)(x + i),
+        (float)(y + j),
         -2.0f
       };
       
-      //DEBUG_W(L"Point coordinate %f %f", p.x, p.y);
+
       EngineDrawPoint(p,sprite.pixels[j*sprite.width+i].color); 
     }
-  }
+  } 
 #endif  
 #if 0
   if (sprite.flip == FLIP_HORIZONTAL)
@@ -220,21 +219,31 @@ void EngineDrawSprite(
             };
 
             //DEBUG_W(L"Point coordinate %f %f", p.x, p.y);
-            EngineDrawPoint(p,sprite.pixels[i*fx+fy]); 
+            EngineDrawPoint(p,sprite.pixels[fy * sprite.width + fx].color);
           }
         }
       }
     }
   }
-#endif
-#if 0
-    DEBUG_W(L"Sprite  %d x %d Data \n", sprite.width, sprite.height);
+  else
+  {
+      fx = fxs;
+      for (i = 0; i < sprite.width; i++, fx += fxm)
+      {
+          fy = fys;
+          for (j = 0; j < sprite.height; j++, fy += fym)
+          {
+              coordinate_t p = {
+              (x + i),
+              (y + j),
+              -1
+                };
 
-
-    for (i = 0; i < (sprite.width*sprite.height); i++)
-    {
-        DEBUG_W(L"%u %u %u", sprite.pixels[i].color.r,
-                sprite.pixels[i].color.g, sprite.pixels[i].color.b);
-    }
+              //DEBUG_W(L"Point coordinate %f %f", p.x, p.y);
+              EngineDrawPoint(p, sprite.pixels[fy * sprite.width + fx].color);
+          }
+      }
+  }
 #endif
+
 }

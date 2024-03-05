@@ -1,143 +1,60 @@
 #include "framework.h"
+
 #include "engine_types.h"
 
-#include "debug.h"
 
 
 
 
-static INT EngineLoadResource(
-  const DWORD dwResourceId,
-  HBITMAP *ptr_hBitmap
-  );
-
-extern void EngineLoadSpriteFromResource(
-  const DWORD dwResourceId,
-  const flip_t flip,
-  sprite_t *sprite
-  );
+extern void EngineLoadImageResource(
+    sprite_t* sprite,
+    const std::wstring& sImageFile
+);
 
 
-INT EngineLoadResource(
-  const DWORD dwResourceId,
-  HBITMAP *ptr_hBitmap
-  )
+
+void EngineLoadImageResource(sprite_t* sprite,
+    const std::wstring& sImageFile)
 {
-  HINSTANCE hInstance = GetModuleHandle(NULL);
-  *ptr_hBitmap =(HBITMAP)LoadImage(hInstance,
-                                   MAKEINTRESOURCE(dwResourceId),
-                                   IMAGE_BITMAP,
-                                   0, 0,
-                                   LR_CREATEDIBSECTION);
-  if (NULL == *ptr_hBitmap)
-  {
-    DEBUG_W(L"Failed to load bitmap %ld", GetLastError());
-    return -1;
-  }
-  return 0;
-}
+    Gdiplus::Bitmap* bmp = nullptr;
 
+    INT32 x = 0;
+    INT32 y = 0;
+    INT32 i32SpriteSize = 0;
+    //TODO: Check if file exists
+    // Load sprite from file
+    bmp = Gdiplus::Bitmap::FromFile(sImageFile.c_str());
 
-
-void EngineLoadSpriteFromResource(
-  const DWORD dwResourceId,
-  const flip_t flip,
-  sprite_t *sprite  
-  )
-{
-  BITMAP bitmap;
-  HBITMAP hBitmap = NULL;
-  size_t i = 0;
-  if (0 == EngineLoadResource(dwResourceId, &hBitmap))
-  {
-    GetObject(hBitmap, sizeof(BITMAP), &bitmap);
-    sprite->width = bitmap.bmWidth;
-    sprite->height = bitmap.bmHeight;
-    sprite->flip = flip;
-
-    HDC dcBitmap = CreateCompatibleDC ( NULL );
-    SelectObject( dcBitmap, hBitmap );
-
-    BITMAPINFO bmpInfo;
-    bmpInfo.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-    bmpInfo.bmiHeader.biWidth = bitmap.bmWidth;
-    bmpInfo.bmiHeader.biHeight = bitmap.bmHeight;
-    bmpInfo.bmiHeader.biPlanes = 1;
-    bmpInfo.bmiHeader.biBitCount = 32;
-    bmpInfo.bmiHeader.biCompression = BI_RGB;        
-    bmpInfo.bmiHeader.biSizeImage = 0;
-    
-    COLORREF* pixel = (COLORREF*)malloc(sizeof(COLORREF)*(bitmap.bmWidth * bitmap.bmHeight));
-    if (pixel != NULL)
+    if (bmp->GetLastStatus() == Gdiplus::Ok)
     {
-      GetDIBits(
-        dcBitmap ,
-        hBitmap ,
-        0 ,
-        bitmap.bmHeight ,
-        pixel ,
-        &bmpInfo ,
-        DIB_RGB_COLORS
-        );
-
-      sprite->pixels = (pixel_t*)malloc(sizeof(COLORREF)*(sprite->width * sprite->height));
-      if (sprite->pixels != NULL)
-      {
-        for (i = 0; i < (sprite->width * sprite->height); i++)
+        sprite->width = bmp->GetWidth();
+        sprite->height = bmp->GetHeight();
+        i32SpriteSize = sprite->width * sprite->height;
+        sprite->pixels = (pixel_t*)malloc(i32SpriteSize*sizeof(pixel_t));
+        if (sprite->pixels != nullptr)
         {
-          sprite->pixels[i].rgb = pixel[i];
+            memset(sprite->pixels, 0, i32SpriteSize * sizeof(pixel_t));
+            for (y = 0; y < sprite->height; y++)
+            {
+                for (x = 0; x < sprite->width; x++)
+                {
+                    Gdiplus::Color gdiColor;
+                    bmp->GetPixel(x, (sprite->height - y), &gdiColor);
+                    pixel_t color = {};
+                    color.color.r = gdiColor.GetR();
+                    color.color.g = gdiColor.GetG();
+                    color.color.b = gdiColor.GetB();
+                    color.color.a = gdiColor.GetA();
+                    sprite->pixels[y * sprite->width + x] = color;
+                }
+            }
         }
-      }
-      else
-      {
-        DEBUG_W(L"Could not allocate memory for sprite");
-      }
+
     }
-    free(pixel);
-    DeleteObject(hBitmap);
-
-  }
-}
-
-
-
-/*TODO: Not finished with the textures, they just work for now*/
-
-void DeleteGlTexture(HBITMAP *hBitmap)
-{
-    DeleteObject(*hBitmap);
-}
-
-
-INT LoadGlTexture(wchar_t *sFilename)
-{
-  /*BITMAP bitmap;
-  HBITMAP hBitmap = NULL;
-  GLuint iTextureId = 0;
-
-  HINSTANCE hInstance = GetModuleHandle(NULL);
-  hBitmap =(HBITMAP)LoadImage(hInstance, MAKEINTRESOURCE(IDI_0), IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION);
-
- 
-  if (NULL == hBitmap)
-  {
-    DEBUG_W(L"Failed to load bitmap %ld", GetLastError());
-    return -1;
-  }
-  else
-  {
-    GetObject(hBitmap, sizeof(BITMAP), &bitmap);
-    glGenTextures(1, &iTextureId);
-    glBindTexture(GL_TEXTURE_2D, iTextureId);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, bitmap.bmWidth, bitmap.bmHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, bitmap.bmBits);
-    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
-    return iTextureId;
-  }*/
-
-  return -1;
-  
-
+    if (bmp != nullptr)
+    {
+        delete bmp;
+    }
 }
 
 
