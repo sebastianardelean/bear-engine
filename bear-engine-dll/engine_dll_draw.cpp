@@ -1,10 +1,8 @@
-#include <Windows.h>
-#include <gl/GL.h>
-#include <gl/glu.h>
+#include "framework.h"
 #include "configuration.h"
 #include "engine_types.h"
 
-#include "debug.h"
+
 
 #define NORMALIZE_3D(in, out) \
   do { \
@@ -13,16 +11,21 @@
   (out).z = (in).z;                                         \
   } while (0)
 
-/* Functions defined in engine_dll_texture.c */
 
-extern void EngineLoadSpriteFromResource(
-  const DWORD dwResourceId,
-  const flip_t flip,
-  const sprite_t *sprite
-  );
+#pragma region imported_functions
+extern void EngineLoadImageFromFile(
+    sprite_t * sprite,
+    const std::wstring & sImageFile
+);
 
+extern void EngineCreateTextureFromImageFile(
+    const std::wstring & sImageFile,
+    DWORD32 * dwTextureId
+);
 
-/* Functions defined in engine_dll_draw.c */
+#pragma endregion
+
+#pragma exported_functions
 extern void EngineDrawPoint(
     const coordinate_t p,
     const color_t color
@@ -38,7 +41,7 @@ extern void EngineDrawTriangle(
     const coordinate_t top_p,
     const coordinate_t bottom_left_p,
     const coordinate_t bottom_right_p,
-    const color_t color
+    const fill_option_t fill
     );
 
 extern void EngineDrawQuad(
@@ -46,16 +49,20 @@ extern void EngineDrawQuad(
     const coordinate_t top_right_p,
     const coordinate_t bottom_right_p,
     const coordinate_t bottom_left_p,
-    const color_t color
+    const fill_option_t fill
     );
 
 extern void EngineDrawSprite(
     const INT32 x,
     const INT32 y,
     const DWORD scale,
-    const DWORD dwResourceId,
+    const std::wstring & sFilePath,
     const flip_t flip
     );
+
+
+
+#pragma endregion
 
 
 void EngineDrawPoint(
@@ -98,7 +105,7 @@ void EngineDrawTriangle(
                         const coordinate_t top_p,
                         const coordinate_t bottom_left_p,
                         const coordinate_t bottom_right_p,
-                        const color_t color
+                        const fill_option_t fill
                         )
 {
   coordinate_t m_p1;
@@ -108,15 +115,37 @@ void EngineDrawTriangle(
   NORMALIZE_3D(bottom_left_p, m_p2);
   NORMALIZE_3D(bottom_right_p, m_p3);
 
-  
-  glBegin(GL_TRIANGLES);
-  glColor4d(color.r/255.0f, color.g/255.0f, color.b/255.0f, color.a/255.0f);
-  glVertex3f(m_p1.x, m_p1.y, m_p1.z);
-  glColor4d(color.r/255.0f, color.g/255.0f, color.b/255.0f, color.a/255.0f);
-  glVertex3f(m_p2.x, m_p2.y, m_p2.z);
-  glColor4d(color.r/255.0f, color.g/255.0f, color.b/255.0f, color.a/255.0f);
-  glVertex3f(m_p3.x, m_p3.y, m_p3.z);
-  glEnd();
+  DWORD32 dwTextureId = 0;
+
+  if (fill.fill_type == FILL_TEXTURE)
+  {
+      EngineCreateTextureFromImageFile(fill.sTextureFile, &dwTextureId);
+      glBindTexture(GL_TEXTURE_2D, dwTextureId);
+      glBegin(GL_TRIANGLES);
+      
+      glVertex3f(m_p1.x, m_p1.y, m_p1.z);
+      
+      glVertex3f(m_p2.x, m_p2.y, m_p2.z);
+      
+      glVertex3f(m_p3.x, m_p3.y, m_p3.z);
+      glEnd();
+  }
+  else
+  {
+      glBegin(GL_TRIANGLES);
+      glColor4d(fill.color.r / 255.0f, fill.color.g / 255.0f, fill.color.b / 255.0f, fill.color.a / 255.0f);
+      glVertex3f(m_p1.x, m_p1.y, m_p1.z);
+      glColor4d(fill.color.r / 255.0f, fill.color.g / 255.0f, fill.color.b / 255.0f, fill.color.a / 255.0f);
+      glVertex3f(m_p2.x, m_p2.y, m_p2.z);
+      glColor4d(fill.color.r / 255.0f, fill.color.g / 255.0f, fill.color.b / 255.0f, fill.color.a / 255.0f);
+      glVertex3f(m_p3.x, m_p3.y, m_p3.z);
+      glEnd();
+  }
+
+
+
+
+ 
 }
 
 
@@ -125,7 +154,7 @@ void EngineDrawQuad(
                     const coordinate_t top_right_p,
                     const coordinate_t bottom_right_p,
                     const coordinate_t bottom_left_p,
-                    const color_t color
+                    const fill_option_t fill
                     )
 {
   coordinate_t m_p1;
@@ -138,25 +167,46 @@ void EngineDrawQuad(
   NORMALIZE_3D(bottom_right_p, m_p3);
   NORMALIZE_3D(bottom_left_p, m_p4);
 
+  DWORD32 dwTextureId = 0;
 
-  glBegin(GL_QUADS);
-  glColor4d(color.r/255.0f, color.g/255.0f, color.b/255.0f, color.a/255.0f);
-  glVertex3f(m_p1.x, m_p1.y, m_p1.z);
-  glColor4d(color.r/255.0f, color.g/255.0f, color.b/255.0f, color.a/255.0f);
-  glVertex3f(m_p2.x, m_p2.y, m_p2.z);
-  glColor4d(color.r/255.0f, color.g/255.0f, color.b/255.0f, color.a/255.0f);
-  glVertex3f(m_p3.x, m_p3.y, m_p3.z);
-  glColor4d(color.r/255.0f, color.g/255.0f, color.b/255.0f, color.a/255.0f);
-  glVertex3f(m_p4.x, m_p4.y, m_p4.z);
-  glEnd();
+  if (fill.fill_type == FILL_TEXTURE)
+  {
+      EngineCreateTextureFromImageFile(fill.sTextureFile, &dwTextureId);
+      glBindTexture(GL_TEXTURE_2D, dwTextureId);
+      glBegin(GL_QUADS);
+      
+      glVertex3f(m_p1.x, m_p1.y, m_p1.z);
+      
+      glVertex3f(m_p2.x, m_p2.y, m_p2.z);
+      
+      glVertex3f(m_p3.x, m_p3.y, m_p3.z);
+      
+      glVertex3f(m_p4.x, m_p4.y, m_p4.z);
+      glEnd();
+  }
+  else
+  {
+      glBegin(GL_QUADS);
+      glColor4d(fill.color.r / 255.0f, fill.color.g / 255.0f, fill.color.b / 255.0f, fill.color.a / 255.0f);
+      glVertex3f(m_p1.x, m_p1.y, m_p1.z);
+      glColor4d(fill.color.r / 255.0f, fill.color.g / 255.0f, fill.color.b / 255.0f, fill.color.a / 255.0f);
+      glVertex3f(m_p2.x, m_p2.y, m_p2.z);
+      glColor4d(fill.color.r / 255.0f, fill.color.g / 255.0f, fill.color.b / 255.0f, fill.color.a / 255.0f);
+      glVertex3f(m_p3.x, m_p3.y, m_p3.z);
+      glColor4d(fill.color.r / 255.0f, fill.color.g / 255.0f, fill.color.b / 255.0f, fill.color.a / 255.0f);
+      glVertex3f(m_p4.x, m_p4.y, m_p4.z);
+      glEnd();
+  }
   
 }
+
+
 
 void EngineDrawSprite(
   const INT32 x,
   const INT32 y,
   const DWORD scale,
-  const DWORD dwResourceId,
+  const std::wstring &sFilePath,
   const flip_t flip)
 {
   sprite_t sprite;
@@ -173,22 +223,22 @@ void EngineDrawSprite(
   DWORD is = 0;
   DWORD js = 0;
 
-  EngineLoadSpriteFromResource(dwResourceId,flip, &sprite);
+  EngineLoadImageFromFile(&sprite, sFilePath.c_str());
 #if 1
-  for (i = 0; i < sprite.width; i++)
+  for (j = 0; j < sprite.height; j++)
   {
-    for (j = 0; j < sprite.height; j++)
+    for (i = 0; i < sprite.height; i++)
     {
       coordinate_t p = {
-        (float)(x + (i * scale)),
-        (float)(y + (j * scale)),
+        (float)(x + i),
+        (float)(y + j),
         -2.0f
       };
       
-      //DEBUG_W(L"Point coordinate %f %f", p.x, p.y);
+
       EngineDrawPoint(p,sprite.pixels[j*sprite.width+i].color); 
     }
-  }
+  } 
 #endif  
 #if 0
   if (sprite.flip == FLIP_HORIZONTAL)
@@ -222,21 +272,31 @@ void EngineDrawSprite(
             };
 
             //DEBUG_W(L"Point coordinate %f %f", p.x, p.y);
-            EngineDrawPoint(p,sprite.pixels[i*fx+fy]); 
+            EngineDrawPoint(p,sprite.pixels[fy * sprite.width + fx].color);
           }
         }
       }
     }
   }
-#endif
-#if 0
-    DEBUG_W(L"Sprite  %d x %d Data \n", sprite.width, sprite.height);
+  else
+  {
+      fx = fxs;
+      for (i = 0; i < sprite.width; i++, fx += fxm)
+      {
+          fy = fys;
+          for (j = 0; j < sprite.height; j++, fy += fym)
+          {
+              coordinate_t p = {
+              (x + i),
+              (y + j),
+              -1
+                };
 
-
-    for (i = 0; i < (sprite.width*sprite.height); i++)
-    {
-        DEBUG_W(L"%u %u %u", sprite.pixels[i].color.r,
-                sprite.pixels[i].color.g, sprite.pixels[i].color.b);
-    }
+              //DEBUG_W(L"Point coordinate %f %f", p.x, p.y);
+              EngineDrawPoint(p, sprite.pixels[fy * sprite.width + fx].color);
+          }
+      }
+  }
 #endif
+
 }

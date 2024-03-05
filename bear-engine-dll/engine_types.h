@@ -1,8 +1,14 @@
 #ifndef ENGINE_TYPES_H
 #define ENGINE_TYPES_H
 
-#include <Windows.h>
 
+#include <string>
+
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
 typedef struct
 {
   BYTE a;
@@ -12,6 +18,20 @@ typedef struct
 
 } color_t;
 
+typedef enum
+{
+	FILL_COLOR,
+	FILL_TEXTURE
+}fill_type_t;
+
+
+
+typedef struct
+{
+	fill_type_t fill_type;
+	color_t color;
+	const wchar_t *sTextureFile;
+}fill_option_t;
 
 typedef struct
 {
@@ -30,7 +50,7 @@ typedef enum
 typedef union
 {
   color_t color;
-  COLORREF rgb;
+  DWORD rgb;
 }pixel_t;
 
 typedef struct
@@ -47,7 +67,7 @@ typedef void(FAR WINAPI* FARPROC_ENGINE_DRAW_SPRITE)(
 	const INT32, 
 	const INT32, 
 	const DWORD, 
-	const DWORD, 
+	const std::wstring &, 
 	const flip_t);
 
 
@@ -56,13 +76,13 @@ typedef void(FAR WINAPI* FARPROC_ENGINE_DRAW_QUAD)(
 	const coordinate_t,
 	const coordinate_t,
 	const coordinate_t,
-	const color_t);
+	const fill_option_t);
 
 typedef void(FAR WINAPI* FARPROC_ENGINE_DRAW_TRIANGLE)(
 	const coordinate_t,
 	const coordinate_t,
 	const coordinate_t,
-	const color_t
+	const fill_option_t
 	);	
 
 
@@ -77,10 +97,15 @@ typedef void(FAR WINAPI* FARPROC_ENGINE_DRAW_POINT)(
 	const color_t
 	);
 
+
 typedef BOOL(FAR WINAPI* FARPROC_ENGINE_KEY_STATE)(BYTE);
 
 typedef INT_PTR(FAR WINAPI * FARPROC_ENGINE_INIT)(void); 
 
 typedef void(FAR WINAPI* FARPROC_ENGINE_RUN)(BOOL(*FctDraw)(void));
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 
 #endif

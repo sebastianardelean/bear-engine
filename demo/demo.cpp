@@ -4,14 +4,14 @@
  */
 
 #include <Windows.h>
-#include <stdlib.h>
-#include <signal.h>
+#include <cstdlib>
+#include <csignal>
 
-#include <stdlib.h>
-#include "engine_types.h"
+#include <string>
+#include <engine_types.h>
 
-#include "configuration.h"
-#include "debug.h"
+#include <configuration.h>
+
 
 
 #include <gl\gl.h>
@@ -33,6 +33,8 @@ static FARPROC_ENGINE_DRAW_QUAD HndlDrawQuad = NULL;
 static FARPROC_ENGINE_DRAW_POINT HndlDrawPoint = NULL;
 static FARPROC_ENGINE_DRAW_SPRITE HndlDrawSprite = NULL;
 
+
+
 static void Cleanup(void)
 {
 
@@ -44,6 +46,7 @@ static void Cleanup(void)
     HndlDrawQuad = NULL;
     HndlDrawPoint = NULL;
     HndlDrawSprite = NULL;
+    
     if (g_hEngineDll)
     {
         (void)FreeLibrary(g_hEngineDll);
@@ -61,6 +64,7 @@ static void InitializeDllHandlers(void)
     HndlDrawQuad = (FARPROC_ENGINE_DRAW_QUAD)(GetProcAddress(g_hEngineDll, "HndlEngineDrawQuad"));
     HndlDrawPoint = (FARPROC_ENGINE_DRAW_POINT)(GetProcAddress(g_hEngineDll, "HndlEngineDrawPoint"));
     HndlDrawSprite = (FARPROC_ENGINE_DRAW_SPRITE)(GetProcAddress(g_hEngineDll, "HndlEngineDrawSprite"));
+    
     if (NULL == HndlCreateWindow || NULL == HndlRun)
     {
         Cleanup();
@@ -81,15 +85,15 @@ static BOOL HndlDraw(void)
 
     if (HndlGetKeyState(VK_F1))
     {
-      #if 0
+#if 0
         HndlDrawSprite(
             100,
             100,
             1,
-            200,
-            (flip_t)0);
-        #endif
-#if 1
+            L"c:\\Users\\sardelean\\Documents\\workspace\\bear-graphic-engine\\NeHe.bmp",
+            FLIP_HORIZONTAL);
+#endif
+#if 0
         size_t i = 0;
         size_t j = 0;
         for (i = 0; i < SCREEN_WIDTH; i++)
@@ -103,7 +107,7 @@ static BOOL HndlDraw(void)
         }
 
 #endif
-#if 0
+#if 1
         coordinate_t p1 = { 0.0f, 0.0f, -1.0f };
         coordinate_t p2 = { 200.0f, 200.0f, -1.0f };
         color_t color = { rand() % 255, rand() % 255, rand() % 255, 0 };
@@ -115,15 +119,22 @@ static BOOL HndlDraw(void)
 
         color_t cr = { rand() % 255, rand() % 255, rand() % 255, 0 };
 
-        HndlDrawTriangle(pr1, pr2, pr3, cr);
+        fill_option_t fill_option;
+        fill_option.fill_type = FILL_COLOR;
+        fill_option.color = cr;
 
+        HndlDrawTriangle(pr1, pr2, pr3, fill_option);
 
+        fill_option.fill_type = FILL_TEXTURE;
+        fill_option.sTextureFile = L"c:\\Users\\sardelean\\Documents\\workspace\\bear-graphic-engine\\NeHe.bmp";
         coordinate_t pq1 = { 300.0f, 300.0f, -2.0f };
         coordinate_t pq2 = { 350.0f, 300.0f, -2.0f };
         coordinate_t pq3 = { 350.0f, 250.0f, -2.0f };
         coordinate_t pq4 = { 300.0f, 250.0f, -2.0f };
-        color_t cq = { rand() % 255, rand() % 255, rand() % 255, 0 };
-        HndlDrawQuad(pq1, pq2, pq3, pq4, cq);
+        
+        
+        HndlDrawQuad(pq1, pq2, pq3, pq4, fill_option);
+
 
         //    int i = HndlLoadTexture(L"ANA");
         //    glBindTexture(GL_TEXTURE_2D, i);
@@ -136,17 +147,14 @@ static BOOL HndlDraw(void)
     return FALSE;
 }
 
-int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
-    _In_opt_ HINSTANCE hPrevInstance,
-    _In_ LPWSTR    lpCmdLine,
-    _In_ int       nCmdShow)
+int main(void)
 {
-    UNREFERENCED_PARAMETER(hPrevInstance);
+  
 
     SetProcessDPIAware();
 
-    //g_hEngineDll = LoadLibraryW(L"bear-engine-dll.dll");
-    g_hEngineDll = LoadLibraryW(L"bengine_dll");
+    g_hEngineDll = LoadLibraryW(L"bear-engine-dll.dll");
+    //g_hEngineDll = LoadLibraryW(L"bengine_dll");
 
     if (NULL == g_hEngineDll)
     {
@@ -159,10 +167,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     signal(SIGINT, HndlSIGINT);
 
-    if (HndlCreateWindow())
+    if (HndlCreateWindow() != 0)
     {
-      Cleanup();
-      return -1;
+        return -1;
     }
 
     HndlRun(&HndlDraw);

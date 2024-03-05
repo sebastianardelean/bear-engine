@@ -1,19 +1,14 @@
-#include <Windows.h>
-#include "configuration.h"
-#include "engine_types.h"
-#include "debug.h"
+#include "framework.h"
 
 #pragma comment (lib,"Gdiplus.lib")
 #pragma comment (lib,"user32.lib")
 #pragma comment (lib,"opengl32.lib")
 #pragma comment (lib,"Gdi32.lib")
 #pragma comment (lib,"Glu32.lib")
+#pragma comment (lib,"Gdiplus.lib")
 
 
 
-extern void ReportError(wchar_t* sMessage);
-
-extern void ReportWin32Error(wchar_t* sMessage);
 
 extern LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
@@ -21,17 +16,19 @@ extern LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 /* Internal Engine functions */
 extern void EngineDestroyWindow();
 
-/* Engine Window functions */
+#pragma region window_functions
+
 extern INT EngineCreateWindow(
-    const wchar_t* cTitle,
+    const std::wstring &cTitle,
     const INT iWinWidth,
     const INT iWinHeight,
     const BOOL bFullScreen
 );
 
 extern BOOL EngineGetKeyState(const BYTE bKeyCode);
+#pragma endregion
 
-/*Engine draw Functions*/
+#pragma region draw_functions
 extern void EngineDrawScene();
 
 extern void EngineDrawPoint(
@@ -49,7 +46,7 @@ extern void EngineDrawTriangle(
     const coordinate_t top_p,
     const coordinate_t bottom_left_p,
     const coordinate_t bottom_right_p,
-    const color_t color
+    const fill_option_t fill
 );
 
 extern void EngineDrawQuad(
@@ -57,7 +54,7 @@ extern void EngineDrawQuad(
     const coordinate_t top_right_p,
     const coordinate_t bottom_right_p,
     const coordinate_t bottom_left_p,
-    const color_t color
+    const fill_option_t fill
 );
 
 
@@ -66,24 +63,29 @@ extern void EngineDrawSprite(
     const INT32 x,
     const INT32 y,
     const DWORD scale,
-    const DWORD dwResourceId,
+    const std::wstring& sFilePath,
     const flip_t flip
 );
+
+
+#pragma endregion
 
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 
+    
+
     __declspec(dllexport) void HndlEngineDrawSprite(
         const INT32 x,
         const INT32 y,
         const DWORD scale,
-        const DWORD dwResourceId,
+        const std::wstring& sFilePath,
         const flip_t flip
     )
     {
-        EngineDrawSprite(x, y, scale, dwResourceId, flip);
+        EngineDrawSprite(x, y, scale, sFilePath, flip);
     }
 
 
@@ -92,19 +94,19 @@ extern "C"
         const coordinate_t top_right_p,
         const coordinate_t bottom_right_p,
         const coordinate_t bottom_left_p,
-        const color_t color)
+        const fill_option_t fill)
     {
-        EngineDrawQuad(top_left_p, top_right_p, bottom_right_p, bottom_left_p, color);
+        EngineDrawQuad(top_left_p, top_right_p, bottom_right_p, bottom_left_p, fill);
     }
 
     __declspec(dllexport) void HndlEngineDrawTriangle(
         const coordinate_t top_p,
         const coordinate_t bottom_left_p,
         const coordinate_t bottom_right_p,
-        const color_t color
+        const fill_option_t fill
     )
     {
-        EngineDrawTriangle(top_p, bottom_left_p, bottom_right_p, color);
+        EngineDrawTriangle(top_p, bottom_left_p, bottom_right_p, fill);
     }
 
 
@@ -130,13 +132,13 @@ extern "C"
 
     __declspec(dllexport) INT HndlEngineCreateWindow()
     {
-        EngineCreateWindow(
+        return EngineCreateWindow(
             L"Bear Engine",
             SCREEN_WIDTH,
             SCREEN_HEIGHT,
             FULL_SCREEN
         );
-        return 0;
+
     }
 
 
