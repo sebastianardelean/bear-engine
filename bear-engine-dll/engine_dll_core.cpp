@@ -12,13 +12,15 @@ static HDC g_hDC = NULL;
 static HGLRC g_hRC = NULL;
 static ULONG_PTR g_ptrGdiplusToken = 0;
 
-
+static BOOL g_baKeys[256] = { 0 };
 
 static HINSTANCE g_hInstance = NULL;
 
 static GLvoid InitGL(GLvoid);
 
 static GLvoid ResizeGLScene(GLsizei width, GLsizei height);
+
+static LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 extern INT EngineCreateWindow(
                         const std::wstring & cTitle,
@@ -31,8 +33,17 @@ extern void EngineDestroyWindow();
 
 extern void EngineDrawScene();
 
-extern LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+extern BOOL EngineGetKeyState(const BYTE bKeyCode);
 
+
+
+
+BOOL EngineGetKeyState(const BYTE bKeyCode)
+{
+    BOOL bKeyState = g_baKeys[bKeyCode];
+    g_baKeys[bKeyCode] = FALSE;
+    return bKeyState;
+}
 
 
 
@@ -293,4 +304,38 @@ GLvoid ResizeGLScene(GLsizei width, GLsizei height)
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
 
+}
+
+LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+    switch (uMsg)
+    {
+    case WM_ACTIVATE://should stop rendering in background
+        break;
+    case WM_SYSCOMMAND:
+    {
+        switch (wParam)
+        {
+        case SC_SCREENSAVE:
+        case SC_MONITORPOWER:
+            return 0;
+        }
+        break;
+    }
+    case WM_CLOSE:
+        PostQuitMessage(0);
+        break;
+    case WM_KEYDOWN:
+        g_baKeys[wParam] = TRUE;
+        break;
+    case WM_KEYUP:
+        g_baKeys[wParam] = FALSE;
+        break;
+    case WM_SIZE:
+        ResizeGLScene(LOWORD(lParam), HIWORD(lParam));
+        break;
+    default:
+        break;
+    }
+    return DefWindowProc(hWnd, uMsg, wParam, lParam);
 }

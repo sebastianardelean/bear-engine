@@ -1,6 +1,0 @@
-#include "resource.h"
-
-
-// Bitmap resource
-IDI_0      BITMAP       "c:\\Users\\sardelean\\Documents\\workspace\\bear-graphic-engine\\NeHe.bmp"
-

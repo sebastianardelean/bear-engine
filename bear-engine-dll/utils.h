@@ -49,7 +49,7 @@ namespace utils
 
 
 #pragma region debug
-
+#define DEBUG
 #ifdef DEBUG
 #define BUFFER_SIZE 2048
 

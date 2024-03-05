@@ -46,7 +46,7 @@ extern void EngineDrawTriangle(
     const coordinate_t top_p,
     const coordinate_t bottom_left_p,
     const coordinate_t bottom_right_p,
-    const color_t color
+    const fill_option_t fill
 );
 
 extern void EngineDrawQuad(
@@ -54,7 +54,7 @@ extern void EngineDrawQuad(
     const coordinate_t top_right_p,
     const coordinate_t bottom_right_p,
     const coordinate_t bottom_left_p,
-    const color_t color
+    const fill_option_t fill
 );
 
 
@@ -66,12 +66,16 @@ extern void EngineDrawSprite(
     const std::wstring& sFilePath,
     const flip_t flip
 );
+
+
 #pragma endregion
 
 #ifdef __cplusplus
 extern "C"
 {
 #endif
+
+    
 
     __declspec(dllexport) void HndlEngineDrawSprite(
         const INT32 x,
@@ -90,19 +94,19 @@ extern "C"
         const coordinate_t top_right_p,
         const coordinate_t bottom_right_p,
         const coordinate_t bottom_left_p,
-        const color_t color)
+        const fill_option_t fill)
     {
-        EngineDrawQuad(top_left_p, top_right_p, bottom_right_p, bottom_left_p, color);
+        EngineDrawQuad(top_left_p, top_right_p, bottom_right_p, bottom_left_p, fill);
     }
 
     __declspec(dllexport) void HndlEngineDrawTriangle(
         const coordinate_t top_p,
         const coordinate_t bottom_left_p,
         const coordinate_t bottom_right_p,
-        const color_t color
+        const fill_option_t fill
     )
     {
-        EngineDrawTriangle(top_p, bottom_left_p, bottom_right_p, color);
+        EngineDrawTriangle(top_p, bottom_left_p, bottom_right_p, fill);
     }
 
 

@@ -2,7 +2,7 @@ CC = cl
 LINKER = link
 RC = rc
 
-CFLAGS = /W3 /D_UNICODE /DUNICODE
+CFLAGS = /W3 /D_UNICODE /DUNICODE /D_WINDOWS /D_WINDLL
 
 DBGCFLAGS = $(CFLAGS) /DDEBUG /Zi /W3 # temporarly not Wall
 
@@ -25,7 +25,7 @@ LIBS = user32.lib opengl32.lib Gdi32.lib Glu32.lib
 all: clean debug release
 
 debug: prep resource demo.cpp
-	$(CC) $(DBGCFLAGS) $(EXE_SRC) $(RES_FILE).res /link $(LIBS) /out:$(DBGDIR)/$(EXE_NAME)
+	$(CC) $(DBGCFLAGS) /D_CONSOLE $(EXE_SRC) $(RES_FILE).res /link $(LIBS) /out:$(DBGDIR)/$(EXE_NAME)
 	$(CC) $(DBGCFLAGS) /D_WINDLL $(DLL_SRC) /LD /link $(LIBS) /DEF:engine_dll.def /out:$(DBGDIR)/$(DLL_NAME)
 
 release: prep resource demo.cpp

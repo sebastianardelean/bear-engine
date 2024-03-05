@@ -6,14 +6,17 @@
 
 
 
-extern void EngineLoadImageResource(
-    sprite_t* sprite,
+extern void EngineLoadImageFromFile(
     const std::wstring& sImageFile
 );
 
+extern void EngineCreateTextureFromImageFile(
+    const std::wstring& sImageFile,
+    DWORD32* dwTextureId
+);
 
 
-void EngineLoadImageResource(sprite_t* sprite,
+void EngineLoadImageFromFile(sprite_t* sprite,
     const std::wstring& sImageFile)
 {
     Gdiplus::Bitmap* bmp = nullptr;
@@ -59,4 +62,27 @@ void EngineLoadImageResource(sprite_t* sprite,
 
 
 
+
+void EngineCreateTextureFromImageFile(
+    const std::wstring& sImageFile,
+    DWORD32 *dwTextureId
+)
+{
+   
+    sprite_t sprite = {};
+    EngineLoadImageFromFile(&sprite, sImageFile);
+
+
+    GLuint iTextureId = 0;
+
+    glGenTextures(1, &iTextureId);
+
+    glBindTexture(GL_TEXTURE_2D, iTextureId);
+
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, sprite.width, sprite.height, 0, GL_RGB, GL_UNSIGNED_BYTE, sprite.pixels);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    *dwTextureId = iTextureId;
+}
 

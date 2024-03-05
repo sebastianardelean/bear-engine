@@ -1,0 +1,7 @@
+.vs/*
+bear-engine-dll/Debug/*
+bear-engine-dll/Release/*
+bear-engine-dll/x64/*
+demo/Debug/*
+demo/Release/*
+demo/x64/*
