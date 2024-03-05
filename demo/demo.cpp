@@ -32,7 +32,7 @@ static FARPROC_ENGINE_DRAW_TRIANGLE HndlDrawTriangle = NULL;
 static FARPROC_ENGINE_DRAW_QUAD HndlDrawQuad = NULL;
 static FARPROC_ENGINE_DRAW_POINT HndlDrawPoint = NULL;
 static FARPROC_ENGINE_DRAW_SPRITE HndlDrawSprite = NULL;
-
+static FARPROC_ENGINE_PARAM_BOOL HndlChangeLighting = NULL;
 
 
 static void Cleanup(void)
@@ -46,6 +46,7 @@ static void Cleanup(void)
     HndlDrawQuad = NULL;
     HndlDrawPoint = NULL;
     HndlDrawSprite = NULL;
+    HndlChangeLighting = NULL;
     
     if (g_hEngineDll)
     {
@@ -64,7 +65,7 @@ static void InitializeDllHandlers(void)
     HndlDrawQuad = (FARPROC_ENGINE_DRAW_QUAD)(GetProcAddress(g_hEngineDll, "HndlEngineDrawQuad"));
     HndlDrawPoint = (FARPROC_ENGINE_DRAW_POINT)(GetProcAddress(g_hEngineDll, "HndlEngineDrawPoint"));
     HndlDrawSprite = (FARPROC_ENGINE_DRAW_SPRITE)(GetProcAddress(g_hEngineDll, "HndlEngineDrawSprite"));
-    
+    HndlChangeLighting = (FARPROC_ENGINE_PARAM_BOOL)(GetProcAddress(g_hEngineDll, "HndlEngineChangeLighting"));
     if (NULL == HndlCreateWindow || NULL == HndlRun)
     {
         Cleanup();
@@ -82,7 +83,13 @@ static void HndlSIGINT(int signal)
 
 static BOOL HndlDraw(void)
 {
-
+    BOOL value = TRUE;
+    if (HndlGetKeyState(VK_F2))
+    {
+        
+        HndlChangeLighting(value);
+        value = !value;
+    }
     if (HndlGetKeyState(VK_F1))
     {
 #if 0
@@ -125,8 +132,8 @@ static BOOL HndlDraw(void)
 
         HndlDrawTriangle(pr1, pr2, pr3, fill_option);
 
-        fill_option.fill_type = FILL_TEXTURE;
-        fill_option.sTextureFile = L"c:\\Users\\sardelean\\Documents\\workspace\\bear-graphic-engine\\NeHe.bmp";
+        //fill_option.fill_type = FILL_TEXTURE;
+        //fill_option.sTextureFile = L"c:\\Users\\sardelean\\Documents\\workspace\\bear-graphic-engine\\NeHe.bmp";
         coordinate_t pq1 = { 300.0f, 300.0f, -2.0f };
         coordinate_t pq2 = { 350.0f, 300.0f, -2.0f };
         coordinate_t pq3 = { 350.0f, 250.0f, -2.0f };

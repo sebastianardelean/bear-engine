@@ -74,7 +74,19 @@ extern void EngineDrawSprite(
 extern "C"
 {
 #endif
-
+    __declspec(dllexport) void HndlEngineChangeLighting(
+        BOOL bLightOn
+    )
+    {
+        if (bLightOn == TRUE)
+        {
+            glEnable(GL_LIGHTING);
+        }
+        else
+        {
+            glDisable(GL_LIGHTING);
+        }
+    }
     
 
     __declspec(dllexport) void HndlEngineDrawSprite(

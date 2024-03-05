@@ -5,3 +5,4 @@ bear-engine-dll/x64/*
 demo/Debug/*
 demo/Release/*
 demo/x64/*
+x64/*

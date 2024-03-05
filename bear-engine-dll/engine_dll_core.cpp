@@ -16,6 +16,10 @@ static BOOL g_baKeys[256] = { 0 };
 
 static HINSTANCE g_hInstance = NULL;
 
+static GLfloat g_faLightAmbient[] = { 0.5f, 0.5f, 0.5f, 1.0f };
+static GLfloat g_faLightDiffuse[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+static GLfloat g_faLightPosition[] = { 0.0f, 0.0f, 2.0f, 1.0f };
+
 static GLvoid InitGL(GLvoid);
 
 static GLvoid ResizeGLScene(GLsizei width, GLsizei height);
@@ -280,7 +284,12 @@ GLvoid InitGL(GLvoid)
   glEnable(GL_DEPTH_TEST);							// Enables Depth Testing
   glDepthFunc(GL_LEQUAL);								// The Type Of Depth Testing To Do
   glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);	// Really Nice Perspective Calculations
-  
+ 
+
+  glLightfv(GL_LIGHT1, GL_AMBIENT, g_faLightAmbient);		// Setup The Ambient Light
+  glLightfv(GL_LIGHT1, GL_DIFFUSE, g_faLightDiffuse);		// Setup The Diffuse Light
+  glLightfv(GL_LIGHT1, GL_POSITION, g_faLightPosition);	// Position The Light
+  glEnable(GL_LIGHT1);
 }
 
 
