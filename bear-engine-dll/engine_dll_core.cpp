@@ -2,7 +2,7 @@
 #include "configuration.h"
 
 
-
+#define NUMBER_OF_KEYS 256
 
 
 /* Functions defined in this module. */
@@ -12,7 +12,7 @@ static HDC g_hDC = NULL;
 static HGLRC g_hRC = NULL;
 static ULONG_PTR g_ptrGdiplusToken = 0;
 
-static BOOL g_baKeys[256] = { 0 };
+static BOOL g_baKeys[NUMBER_OF_KEYS] = { 0 };
 
 static HINSTANCE g_hInstance = NULL;
 
@@ -208,7 +208,7 @@ INT EngineCreateWindow(const std::wstring &cTitle,
   ShowWindow(g_hWnd, SW_SHOW);
   SetForegroundWindow(g_hWnd);
   SetFocus(g_hWnd);
-  ResizeGLScene(iWinWidth, iWinHeight);
+  ResizeGLScene0(iWinWidth, iWinHeight);
 
   InitGL();
 

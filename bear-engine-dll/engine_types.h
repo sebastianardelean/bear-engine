@@ -106,6 +106,14 @@ typedef INT_PTR(FAR WINAPI * FARPROC_ENGINE_INIT)(void);
 
 typedef void(FAR WINAPI* FARPROC_ENGINE_RUN)(BOOL(*FctDraw)(void));
 
+class Shape
+{
+public:
+	void Draw();
+private:
+
+};
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

@@ -25,7 +25,7 @@ extern void EngineCreateTextureFromImageFile(
 
 #pragma endregion
 
-#pragma exported_functions
+#pragma region exported_functions
 extern void EngineDrawPoint(
     const coordinate_t p,
     const color_t color
