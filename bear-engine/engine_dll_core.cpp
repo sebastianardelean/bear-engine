@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "framework.h"
 #include "configuration.h"
 
@@ -208,7 +209,7 @@ INT EngineCreateWindow(const std::wstring &cTitle,
   ShowWindow(g_hWnd, SW_SHOW);
   SetForegroundWindow(g_hWnd);
   SetFocus(g_hWnd);
-  ResizeGLScene0(iWinWidth, iWinHeight);
+  ResizeGLScene(iWinWidth, iWinHeight);
 
   InitGL();
 

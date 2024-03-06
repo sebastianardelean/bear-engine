@@ -1,14 +1,11 @@
+#include "pch.h"
 #include "framework.h"
 
 #include "engine_types.h"
 
 
-
-
-
-extern void EngineLoadImageFromFile(
-    const std::wstring& sImageFile
-);
+extern void EngineLoadImageFromFile(sprite_t* sprite,
+    const std::wstring& sImageFile);
 
 extern void EngineCreateTextureFromImageFile(
     const std::wstring& sImageFile,
