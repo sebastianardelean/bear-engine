@@ -186,14 +186,22 @@ namespace bear
 	{
 
 	}
+
+	Sprite::~Sprite()
+	{
+		if (g_sSprite.pixels != nullptr)
+		{
+			delete[] g_sSprite.pixels;
+		}
+	}
 	void Sprite::Draw()
 	{
-		sprite_t sprite = {};
-		EngineLoadImageFromFile(&sprite, g_sFilePath.c_str());
+		
+		EngineLoadImageFromFile(&g_sSprite, g_sFilePath.c_str());
 
-		for (int32_t j = 0; j < sprite.height; j++)
+		for (int32_t j = 0; j < g_sSprite.height; j++)
 		{
-			for (int32_t i = 0; i < sprite.width; i++)
+			for (int32_t i = 0; i < g_sSprite.width; i++)
 			{
 				coordinate_t p = {
 					(float)i,
@@ -201,7 +209,7 @@ namespace bear
 					-2.0f
 				};
 				
-				Point ptr(p, sprite.pixels[j * sprite.width + i].color);
+				Point ptr(p, g_sSprite.pixels[j * g_sSprite.width + i].color);
 				ptr.Draw(false);
 			}
 		}

@@ -63,10 +63,18 @@ namespace bear {
 	{
 	public:
 		Sprite(const int32_t x, const int32_t y, const std::wstring& sFilePath);
+		Sprite(const Sprite&) = default;
+		Sprite(Sprite&&) = default;
+		Sprite& operator=(const Sprite&) = default;
+		Sprite& operator=(Sprite&&) = default;
+		
+		~Sprite();
+
 		void Draw();
 	private:
 		int32_t g_i32x;
 		int32_t g_i32y;
 		std::wstring g_sFilePath;
+		sprite_t g_sSprite;
 	};
 };
