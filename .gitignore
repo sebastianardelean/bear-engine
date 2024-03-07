@@ -1,8 +1,8 @@
 .vs/*
-bear-engine-dll/Debug/*
-bear-engine-dll/Release/*
-bear-engine-dll/x64/*
-demo/Debug/*
-demo/Release/*
-demo/x64/*
+bear-engine/Debug/*
+bear-engine/Release/*
+bear-engine/x64/*
+demo-project/Debug/*
+demo-project/Release/*
+demo-project/x64/*
 x64/*

@@ -1,8 +1,9 @@
+#include "pch.h"
 #include "framework.h"
 #include "configuration.h"
 
 
-
+#define NUMBER_OF_KEYS 256
 
 
 /* Functions defined in this module. */
@@ -12,7 +13,7 @@ static HDC g_hDC = NULL;
 static HGLRC g_hRC = NULL;
 static ULONG_PTR g_ptrGdiplusToken = 0;
 
-static BOOL g_baKeys[256] = { 0 };
+static BOOL g_baKeys[NUMBER_OF_KEYS] = { 0 };
 
 static HINSTANCE g_hInstance = NULL;
 
@@ -92,7 +93,7 @@ INT EngineCreateWindow(const std::wstring &cTitle,
   wc.cbClsExtra = 0;				
   wc.cbWndExtra	= 0;				
   wc.hInstance	= g_hInstance;			
-  wc.hIcon = LoadIcon(NULL, IDI_WINLOGO);	
+  wc.hIcon = LoadIcon(NULL, IDI_APPLICATION);
   wc.hCursor = LoadCursor(NULL, IDC_ARROW);	
   wc.hbrBackground = NULL;			
   wc.lpszMenuName = NULL;			
@@ -125,7 +126,7 @@ INT EngineCreateWindow(const std::wstring &cTitle,
   if(g_bFullScreen)
   {
     dwExStyle = WS_EX_APPWINDOW;
-    dwStyle = WS_POPUP;
+    dwStyle = WS_POPUP | WS_VISIBLE;
     ShowCursor(FALSE);
   }
   else
@@ -155,7 +156,7 @@ INT EngineCreateWindow(const std::wstring &cTitle,
     return GetLastError();
   }
 
-  static PIXELFORMATDESCRIPTOR pfd =
+ /* static PIXELFORMATDESCRIPTOR pfd =
   {
     sizeof(PIXELFORMATDESCRIPTOR),
     1,
@@ -172,6 +173,13 @@ INT EngineCreateWindow(const std::wstring &cTitle,
     PFD_MAIN_PLANE,
     0,
     0,0,0
+  };*/
+  PIXELFORMATDESCRIPTOR pfd =
+  {
+      sizeof(PIXELFORMATDESCRIPTOR), 1,
+      PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER,
+      PFD_TYPE_RGBA, 32, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      PFD_MAIN_PLANE, 0, 0, 0, 0
   };
 
   g_hDC = GetDC(g_hWnd);
