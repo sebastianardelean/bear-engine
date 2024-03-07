@@ -13,6 +13,6 @@ Run `nmake`
 
 ## TODO
 
-1. Create the windows dll with only the windows specific APIs in C
-2. Rewrite in C++
-3. Analyze the code and structure it different, C++ implementation should make use of namespaces.
+1. ~~Create the windows dll with only the windows specific APIs in C~~
+2. ~~Rewrite in C++~~
+3. ~~Analyze the code and structure it different, C++ implementation should make use of namespaces.~~

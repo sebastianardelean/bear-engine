@@ -24,7 +24,18 @@ static void HndlSIGINT(int signal)
 
 static bool HndlDraw(void)
 {
-    
+    size_t i = 0;
+    size_t j = 0;
+    for (i = 0; i < SCREEN_WIDTH; i++)
+    {
+        for (j = 0; j < SCREEN_HEIGHT; j++)
+        {
+            coordinate_t p = { (float)i,(float)j, -1.0f };
+            color_t color = { rand() % 255u, rand() % 255u, rand() % 255u, 0 };
+            bear::Point ptr = bear::Point(p, color);
+            ptr.Draw(false);
+        }
+    }
     if (bear::HndlEngineGetKeyState(VK_F2))
     {
 
@@ -58,7 +69,7 @@ static bool HndlDraw(void)
         }
 
 #endif
-#if 1
+#if 0
 
         coordinate_t p1 = { 0.0f, 0.0f, -1.0f };
         coordinate_t p2 = { 200.0f, 200.0f, -1.0f };
@@ -94,7 +105,7 @@ static bool HndlDraw(void)
 #endif
         return TRUE;
     }
-    return FALSE;
+    return TRUE;
 }
 
 int main(void)
