@@ -9,6 +9,7 @@ extern void EngineLoadImageFromFile(sprite_t* sprite,
 
 extern void EngineCreateTextureFromImageFile(
     const std::wstring& sImageFile,
+    texture_filter_type_t eFilterType,
     DWORD32* dwTextureId
 );
 
@@ -62,6 +63,7 @@ void EngineLoadImageFromFile(sprite_t* sprite,
 
 void EngineCreateTextureFromImageFile(
     const std::wstring& sImageFile,
+    texture_filter_type_t eFilterType,
     DWORD32 *dwTextureId
 )
 {
@@ -69,17 +71,37 @@ void EngineCreateTextureFromImageFile(
     sprite_t sprite = {};
     EngineLoadImageFromFile(&sprite, sImageFile);
 
-
     GLuint iTextureId = 0;
 
     glGenTextures(1, &iTextureId);
 
-    glBindTexture(GL_TEXTURE_2D, iTextureId);
+    
 
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, sprite.width, sprite.height, 0, GL_RGB, GL_UNSIGNED_BYTE, sprite.pixels);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
+    switch (eFilterType)
+    {
+    case FILTER_NEAREST_TYPE:
+        glBindTexture(GL_TEXTURE_2D, iTextureId);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, sprite.width, sprite.height, 0, GL_RGB, GL_UNSIGNED_BYTE, sprite.pixels);
+        break;
+    case FILTER_LINEAR_TYPE:
+        glBindTexture(GL_TEXTURE_2D, iTextureId);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, sprite.width, sprite.height, 0, GL_RGB, GL_UNSIGNED_BYTE, sprite.pixels);
+        break;
+    case FILTER_MIPMAP_TYPE:
+        glBindTexture(GL_TEXTURE_2D, iTextureId);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
+        gluBuild2DMipmaps(GL_TEXTURE_2D, 3, sprite.width, sprite.height, GL_RGB, GL_UNSIGNED_BYTE, sprite.pixels);
+        break;
+    default:
+        break;
+    }
+    
     *dwTextureId = iTextureId;
 }
 

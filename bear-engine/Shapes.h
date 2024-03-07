@@ -26,8 +26,8 @@ namespace bear {
 		std::vector<coordinate_t> Normalize3d(const std::vector<coordinate_t> coordinates);
 		std::vector<coordinate_t> g_svCoordinates;
 		fill_option_t g_sFillOption;
-		bool g_bIsLightEnabled;
-		coordinate_t g_sNormal;
+		
+		
 	};
 
 	class BEARENGINE_API Point : public Shape
@@ -55,7 +55,6 @@ namespace bear {
 	class BEARENGINE_API Quad :public Shape
 	{
 	public:
-		Quad(coordinate_t sP1, coordinate_t sP2, coordinate_t sP3, coordinate_t sP4, fill_option_t sFillOption);
 		Quad(std::vector<coordinate_t> sP, fill_option_t sFillOption);
 	};
 

@@ -3,6 +3,11 @@
 #include "Shapes.h"
 
 extern void EngineLoadImageFromFile(sprite_t*, const std::wstring&);
+extern void EngineCreateTextureFromImageFile(
+	const std::wstring& sImageFile,
+	texture_filter_type_t eFilterType,
+	DWORD32* dwTextureId
+);
 
 namespace bear
 {
@@ -19,13 +24,12 @@ namespace bear
 		g_svCoordinates(svCoordinates),
 		g_sFillOption(sFillOption)
 	{
-		g_bIsLightEnabled = false;
-		g_sNormal = { 0 };
+		
+		
 	}
 	Shape::Shape(std::vector<coordinate_t> svCoordinates, color_t sColor) :g_svCoordinates(svCoordinates)
 	{
-		g_bIsLightEnabled = false;
-		g_sNormal = { 0 };
+		
 		g_sFillOption.fill_type = FILL_COLOR;
 		g_sFillOption.color = sColor;
 	}
@@ -37,6 +41,13 @@ namespace bear
 		newCoordinates.y = 2 * (coordinates.y / (float)SCREEN_HEIGHT) - 1;
 		newCoordinates.z = coordinates.z;
 
+		newCoordinates.tx = 2 * (coordinates.tx / (float)SCREEN_WIDTH) - 1;
+		newCoordinates.ty = 2 * (coordinates.ty / (float)SCREEN_HEIGHT) - 1;
+		newCoordinates.tz = coordinates.tz;
+
+		newCoordinates.nx = 2 * (coordinates.nx / (float)SCREEN_WIDTH) - 1;
+		newCoordinates.ny = 2 * (coordinates.ny / (float)SCREEN_HEIGHT) - 1;
+		newCoordinates.nz = coordinates.nz;
 
 		return newCoordinates;
 	}
@@ -78,66 +89,64 @@ namespace bear
 			if (g_sFillOption.fill_type == FILL_TEXTURE)
 			{
 				DWORD32 dwTextureId = 0;
-				//EngineCreateTextureFromImageFile(fill.sTextureFile, &dwTextureId);
+				EngineCreateTextureFromImageFile(g_sFillOption.sTextureFile, g_sFillOption.filter_type, &dwTextureId);
 				glBindTexture(GL_TEXTURE_2D, dwTextureId);
 				glBegin(GL_TRIANGLES);
 
-				glVertex3f(g_svCoordinates[0].x, g_svCoordinates[0].y, g_svCoordinates[0].z);
-
-				glVertex3f(g_svCoordinates[1].x, g_svCoordinates[1].y, g_svCoordinates[1].z);
-
-				glVertex3f(g_svCoordinates[2].x, g_svCoordinates[2].y, g_svCoordinates[2].z);
+				for (coordinate_t& c : g_svCoordinates)
+				{
+					if (bIsLightEnabled)
+						glNormal3f(c.nx, c.ny, c.nz);
+					glTexCoord3f(c.tx, c.ty, c.tz);
+					glVertex3f(c.x, c.y, c.z);
+				}
 				glEnd();
 			}
 			else
 			{
 				glBegin(GL_TRIANGLES);
-				glColor4d(g_sFillOption.color.r / 255.0f, g_sFillOption.color.g / 255.0f, g_sFillOption.color.b / 255.0f, g_sFillOption.color.a / 255.0f);
-				glVertex3f(g_svCoordinates[0].x, g_svCoordinates[0].y, g_svCoordinates[0].z);
-				glColor4d(g_sFillOption.color.r / 255.0f, g_sFillOption.color.g / 255.0f, g_sFillOption.color.b / 255.0f, g_sFillOption.color.a / 255.0f);
-				glVertex3f(g_svCoordinates[1].x, g_svCoordinates[1].y, g_svCoordinates[1].z);
-				glColor4d(g_sFillOption.color.r / 255.0f, g_sFillOption.color.g / 255.0f, g_sFillOption.color.b / 255.0f, g_sFillOption.color.a / 255.0f);
-				glVertex3f(g_svCoordinates[2].x, g_svCoordinates[2].y, g_svCoordinates[2].z);
+				for (coordinate_t& c : g_svCoordinates)
+				{
+					glColor4d(g_sFillOption.color.r / 255.0f, g_sFillOption.color.g / 255.0f, g_sFillOption.color.b / 255.0f, g_sFillOption.color.a / 255.0f);
+					glVertex3f(c.x, c.y, c.z);
+				}
 				glEnd();
 			}
 			break;
 		}
-		case ShapeType_t::SHAPE_QUAD:
+		default://is a quad
 		{
 			if (g_sFillOption.fill_type == FILL_TEXTURE)
 			{
 				DWORD32 dwTextureId = 0;
-				//EngineCreateTextureFromImageFile(fill.sTextureFile, &dwTextureId);
+				EngineCreateTextureFromImageFile(g_sFillOption.sTextureFile, g_sFillOption.filter_type, &dwTextureId);
 				glBindTexture(GL_TEXTURE_2D, dwTextureId);
 				glBegin(GL_QUADS);
 
-				glVertex3f(g_svCoordinates[0].x, g_svCoordinates[0].y, g_svCoordinates[0].z);
-
-				glVertex3f(g_svCoordinates[1].x, g_svCoordinates[1].y, g_svCoordinates[1].z);
-
-				glVertex3f(g_svCoordinates[2].x, g_svCoordinates[2].y, g_svCoordinates[2].z);
-
-				glVertex3f(g_svCoordinates[3].x, g_svCoordinates[3].y, g_svCoordinates[3].z);
+				for (coordinate_t& c : g_svCoordinates)
+				{
+					if (bIsLightEnabled)
+						glNormal3f(c.nx, c.ny, c.nz);
+					glTexCoord3f(c.tx, c.ty, c.tz);
+					glVertex3f(c.x, c.y, c.z);
+				}
 				glEnd();
 
 			}
 			else
 			{
 				glBegin(GL_QUADS);
-				glColor4d(g_sFillOption.color.r / 255.0f, g_sFillOption.color.g / 255.0f, g_sFillOption.color.b / 255.0f, g_sFillOption.color.a / 255.0f);
-				glVertex3f(g_svCoordinates[0].x, g_svCoordinates[0].y, g_svCoordinates[0].z);
-				glColor4d(g_sFillOption.color.r / 255.0f, g_sFillOption.color.g / 255.0f, g_sFillOption.color.b / 255.0f, g_sFillOption.color.a / 255.0f);
-				glVertex3f(g_svCoordinates[1].x, g_svCoordinates[1].y, g_svCoordinates[1].z);
-				glColor4d(g_sFillOption.color.r / 255.0f, g_sFillOption.color.g / 255.0f, g_sFillOption.color.b / 255.0f, g_sFillOption.color.a / 255.0f);
-				glVertex3f(g_svCoordinates[2].x, g_svCoordinates[2].y, g_svCoordinates[2].z);
-				glColor4d(g_sFillOption.color.r / 255.0f, g_sFillOption.color.g / 255.0f, g_sFillOption.color.b / 255.0f, g_sFillOption.color.a / 255.0f);
-				glVertex3f(g_svCoordinates[3].x, g_svCoordinates[3].y, g_svCoordinates[3].z);
+				for (coordinate_t& c : g_svCoordinates)
+				{
+					glColor4d(g_sFillOption.color.r / 255.0f, g_sFillOption.color.g / 255.0f, g_sFillOption.color.b / 255.0f, g_sFillOption.color.a / 255.0f);
+					glVertex3f(c.x, c.y, c.z);
+				}
+				
 				glEnd();
 			}
 			break;
 		}
-		default:
-			break;
+
 		}
 
 	}
@@ -169,9 +178,6 @@ namespace bear
 
 	}
 
-	Quad::Quad(coordinate_t sP1, coordinate_t sP2, coordinate_t sP3, coordinate_t sP4, fill_option_t sFillOption) : Shape({ Normalize3d(sP1),Normalize3d(sP2),Normalize3d(sP3),Normalize3d(sP4) }, sFillOption)
-	{
-	}
 
 	Quad::Quad(std::vector<coordinate_t> sP, fill_option_t sFillOption) : Shape(Normalize3d(sP), sFillOption)
 	{

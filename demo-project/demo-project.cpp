@@ -24,12 +24,18 @@ static void HndlSIGINT(int signal)
 
 static bool HndlDraw(void)
 {
-    bool value = true;
+    
     if (bear::HndlEngineGetKeyState(VK_F2))
     {
 
-        bear::HndlEngineChangeLighting(value);
-        value = !value;
+        bear::HndlEngineChangeLighting(true);
+        
+    }
+    if (bear::HndlEngineGetKeyState(VK_F3))
+    {
+
+        bear::HndlEngineChangeLighting(false);
+        
     }
     if (bear::HndlEngineGetKeyState(VK_F1))
     {
@@ -37,7 +43,7 @@ static bool HndlDraw(void)
         bear::Sprite spr = bear::Sprite(100, 100, L"c:\\Users\\sardelean\\Documents\\workspace\\bear-graphic-engine\\NeHe.bmp");
         spr.Draw();
 #endif
-#if 1
+#if 0
         size_t i = 0;
         size_t j = 0;
         for (i = 0; i < SCREEN_WIDTH; i++)
@@ -52,7 +58,7 @@ static bool HndlDraw(void)
         }
 
 #endif
-#if 0
+#if 1
 
         coordinate_t p1 = { 0.0f, 0.0f, -1.0f };
         coordinate_t p2 = { 200.0f, 200.0f, -1.0f };
@@ -81,17 +87,7 @@ static bool HndlDraw(void)
         tr.Draw(false);
 
         
-
-        //fill_option.fill_type = FILL_TEXTURE;
-        //fill_option.sTextureFile = L"c:\\Users\\sardelean\\Documents\\workspace\\bear-graphic-engine\\NeHe.bmp";
-        coordinate_t pq1 = { 300.0f, 300.0f, -2.0f };
-        coordinate_t pq2 = { 350.0f, 300.0f, -2.0f };
-        coordinate_t pq3 = { 350.0f, 250.0f, -2.0f };
-        coordinate_t pq4 = { 300.0f, 250.0f, -2.0f };
-
-        bear::Quad q = bear::Quad(pq1, pq2, pq3, pq4, fill_option);
-        q.Draw(false);
-        
+       
 
 
 

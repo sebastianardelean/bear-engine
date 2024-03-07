@@ -39,6 +39,12 @@ extern "C"
         float x;
         float y;
         float z;
+        float nx;
+        float ny;
+        float nz;
+        float tx;
+        float ty;
+        float tz;
     }coordinate_t;
 
 
