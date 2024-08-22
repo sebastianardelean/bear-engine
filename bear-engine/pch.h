@@ -15,6 +15,8 @@
 #include <objidl.h>
 #include <gdiplus.h>
 
+// SDL2 headers
+#include <SDL.h>
 
 // C++ RunTime Header Files
 #include <cstdio>

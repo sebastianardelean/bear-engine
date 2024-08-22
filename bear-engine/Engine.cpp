@@ -7,7 +7,8 @@
 #pragma comment (lib,"opengl32.lib")
 #pragma comment (lib,"Gdi32.lib")
 #pragma comment (lib,"Glu32.lib")
-#pragma comment (lib,"Gdiplus.lib")
+#pragma comment (lib,"SDL2.lib")
+#pragma comment (lib,"SDL2main.lib")
 
 #pragma region imported_from_core
 extern LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
