@@ -21,12 +21,13 @@ namespace bear
 		int32_t g_i32WinWidth;
 		int32_t g_i32WinHeight;
 
-		/*std::unique_ptr<SDL_Window, decltype(&SDL_DestroyWindow)> g_pWindow;
-		std::unique_ptr<SDL_Renderer, decltype(&SDL_DestroyRenderer)> g_pRenderer;
-		std::unique_ptr<SDL_Texture, decltype(&SDL_DestroyTexture)> g_pTexture; */
+
 		AutoRelease<SDL_Window*, nullptr> g_pWindow;
 		AutoRelease<SDL_Renderer *, nullptr> g_pRenderer;
 		AutoRelease<SDL_Texture*, nullptr> g_pTexture;
+
+
+		std::optional<SDL_KeyboardEvent> g_KeyboardEvent;
 
 	private:
 		class SdlGlobalInitializer

@@ -8,13 +8,17 @@
 
 
 auto HndlEngine(bear::Context &ctx) -> bool {
-    
-    for (size_t i = 0; i < ctx.g_i32WinWidth; i++) {
-        for (size_t j = 0; j < ctx.g_i32WinHeight; j++) {
-            SDL_SetRenderDrawColor(ctx.g_pRenderer.get(), rand()%255, rand() % 255, rand() % 255, rand() % 255);
-            SDL_RenderDrawPoint(ctx.g_pRenderer.get(), i, j);
+    if (ctx.g_KeyboardEvent.has_value()) {
+        if (ctx.g_KeyboardEvent->keysym.sym==SDLK_a) {
+            for (size_t i = 0; i < ctx.g_i32WinWidth; i++) {
+                for (size_t j = 0; j < ctx.g_i32WinHeight; j++) {
+                    SDL_SetRenderDrawColor(ctx.g_pRenderer.get(), rand()%255, rand() % 255, rand() % 255, rand() % 255);
+                    SDL_RenderDrawPoint(ctx.g_pRenderer.get(), i, j);
+                }
+            }
         }
     }
+
     return true;
 }
 

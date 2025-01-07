@@ -44,7 +44,8 @@ if(ENABLE_PCH)
     <cassert>
     <array>
     <string>
-
+    <optional>
+		
 
     <spdlog/spdlog.h>
     <SDL.h>

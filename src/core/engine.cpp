@@ -10,17 +10,7 @@ static bear::Context g_Context;
 namespace bear {
 	
 
-	auto EngineChangeLighting(bool bLightOn) -> void
-	{
-
-	}
-
-	auto EngineGetKeyState(SDL_Keycode bKeyCode) -> bool
-	{
-		return true;
-	}
-
-
+	
 
 	auto EngineInitialize(std::string& name, int32_t winWidth, int32_t winHeight) -> void
 	{
@@ -43,7 +33,7 @@ namespace bear {
 
 		
 		while(!done) {
-			
+			::g_Context.g_KeyboardEvent = std::nullopt;
 			//Handle events on queue
 			while (SDL_PollEvent(&e) != 0)
 			{
@@ -54,8 +44,8 @@ namespace bear {
 					done = true;
 					break;
 				case ::SDL_KEYDOWN:
-					break;
 				case ::SDL_KEYUP:
+					::g_Context.g_KeyboardEvent = e.key;
 					break;
 				default:
 					break;
