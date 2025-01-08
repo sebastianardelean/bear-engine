@@ -22,9 +22,9 @@ namespace bear
 		int32_t g_i32WinHeight;
 
 
-		AutoRelease<SDL_Window*, nullptr> g_pWindow;
-		AutoRelease<SDL_Renderer *, nullptr> g_pRenderer;
-		AutoRelease<SDL_Texture*, nullptr> g_pTexture;
+		core::AutoRelease<SDL_Window*, nullptr> g_pWindow;
+		core::AutoRelease<SDL_Renderer *, nullptr> g_pRenderer;
+		core::AutoRelease<SDL_Texture*, nullptr> g_pTexture;
 
 
 	

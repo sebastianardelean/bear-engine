@@ -3,7 +3,7 @@
 #include <utility>
 #include <type_traits>
 #include <ranges>
-namespace bear
+namespace bear::core
 {
 
     template <class T>
