@@ -11,12 +11,20 @@ set(SOURCE_FILES main.cpp
 
 set(SDL_ZIP_FILE "SDL2-2.30.11")
 set(SDL_ZIP_FILE_NAME "SDL2-devel-2.30.11-VC") #because the name of the archive is different than the name of the output folder
-set(SPDLOG_ZIP_FILE "spdlog-1.15.0")
+set(ZIP_FILE_SDL "../external/${SDL_ZIP_FILE_NAME}.zip")
 
-# Set the path to the zip file
-set(ZIP_FILE_SDL "../libs/SDL2-devel-2.30.11-VC.zip")
-set(ZIP_FILE_SPDLOG "../libs/${SPDLOG_ZIP_FILE}.zip")
+
+
+set(SPDLOG_ZIP_FILE "spdlog-1.15.0")
+set(ZIP_FILE_SPDLOG "../external/${SPDLOG_ZIP_FILE}.zip")
+
+
+set(IMGUI_ZIP_FILE "imgui-1.91.6")
+set(ZIP_FILE_IMGUI "../external/${IMGUI_ZIP_FILE}.zip")
+
 set(DEST_DIR "../libs/")
+
+
 
 
 # Use execute_process to call unzip
@@ -46,6 +54,19 @@ if (NOT UNZIP_RESULT EQUAL 0)
     message(FATAL_ERROR "Unzip failed: ${UNZIP_ERROR}")
 endif()
 
+
+# Use execute_process to call unzip
+execute_process(
+    COMMAND unzip -o ${ZIP_FILE_IMGUI} -d ${DEST_DIR}
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    RESULT_VARIABLE UNZIP_RESULT
+    OUTPUT_VARIABLE UNZIP_OUTPUT
+    ERROR_VARIABLE UNZIP_ERROR
+)
+
+if (NOT UNZIP_RESULT EQUAL 0)
+    message(FATAL_ERROR "Unzip failed: ${UNZIP_ERROR}")
+endif()
 
 
 
