@@ -9,11 +9,12 @@ set(SOURCE_FILES main.cpp
     
 )
 
-set(SDL_ZIP_FILE "SDL2-devel-2.30.11-VC")
+set(SDL_ZIP_FILE "SDL2-2.30.11")
+set(SDL_ZIP_FILE_NAME "SDL2-devel-2.30.11-VC") #because the name of the archive is different than the name of the output folder
 set(SPDLOG_ZIP_FILE "spdlog-1.15.0")
 
 # Set the path to the zip file
-set(ZIP_FILE_SDL "../libs/${SDL_ZIP_FILE}.zip")
+set(ZIP_FILE_SDL "../libs/SDL2-devel-2.30.11-VC.zip")
 set(ZIP_FILE_SPDLOG "../libs/${SPDLOG_ZIP_FILE}.zip")
 set(DEST_DIR "../libs/")
 
@@ -45,7 +46,13 @@ if (NOT UNZIP_RESULT EQUAL 0)
     message(FATAL_ERROR "Unzip failed: ${UNZIP_ERROR}")
 endif()
 
-find_package(SDL2 REQUIRED)
+
+
+
+
+set(CMAKE_PREFIX_PATH "${CMAKE_SOURCE_DIR}/libs/${SDL_ZIP_FILE};../libs/${SPDLOG_ZIP_FILE}/")
+
+find_package(SDL2 REQUIRED HINTS ../libs/${SDL_ZIP_FILE}/)
 
 
 # Find spdlog

@@ -13,7 +13,7 @@ set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_STANDARD_REQUIRED True)
 
 
-set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -23,8 +23,8 @@ add_library(project_options INTERFACE)
 if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
   # using Clang
 elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-  #target_compile_options(project_options INTERFACE -Wall -Wextra -O2)
-  #target_compile_options(project_options INTERFACE -Wall -Wextra -g)
+  target_compile_options(project_options INTERFACE -Wall -Wextra -O2)
+  target_compile_options(project_options INTERFACE -Wall -Wextra -g)
 elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Intel")
   # using Intel C++
 elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
