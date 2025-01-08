@@ -1,8 +1,4 @@
+libs/*
 .vs/*
-bear-engine/Debug/*
-bear-engine/Release/*
-bear-engine/x64/*
-demo-project/Debug/*
-demo-project/Release/*
-demo-project/x64/*
-x64/*
+out/*
+src/out/*

@@ -1,18 +1,28 @@
 ## Build
 
-Run `nmake`
+
 
 ## Links
 
-[nehe gamedev](https://nehe.gamedev.net/tutorial/creating_an_opengl_window_(win32)/13001/)
+[SDL2](https://wiki.libsdl.org/SDL2/CategoryAPI)
+
+[Lazyfoo](https://lazyfoo.net/tutorials/SDL/index.php#Event%20Driven%20Programming)
 
 
-[nehe src github](https://github.com/gamedev-net/nehe-opengl/blob/master/vc/Lesson01/Lesson1.cpp)
+[TheNumb](https://thenumb.at/cpp-course/sdl2/03/03.html)
 
+[LearnOpengl Book](https://learnopengl.com/book/book_pdf.pdf)
+
+[LearOpenGl](https://learnopengl.com/Guest-Articles/How-to-publish)
 
 
 ## TODO
 
-1. ~~Create the windows dll with only the windows specific APIs in C~~
-2. ~~Rewrite in C++~~
-3. ~~Analyze the code and structure it different, C++ implementation should make use of namespaces.~~
+
+1. ~Handle SDL2 keys~
+2. ~Draw Triangles~
+3. ~CMAKE will unpack SDL2~
+4. ~CMAKE will unpack the speedlog~
+5. ~Add ImGUI~
+6. Lights, Camera
+7. Texture Loading
