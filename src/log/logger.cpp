@@ -22,7 +22,8 @@ namespace bear::utils {
                 instance->set_level(spdlog::level::info); // Set the default log level
             }
             catch (const spdlog::spdlog_ex& ex) {
-                std::println("Log initialization failed: {}", ex.what());
+                //std::println("Log initialization failed: {}", ex.what());
+                std::cout << ex.what() << '\n';
             }
             });
 

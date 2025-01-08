@@ -4,11 +4,14 @@ cmake_minimum_required(VERSION 3.20)
 # Project name and version
 project(bear VERSION 1.0)
 set(PROJECT_NAME bear)
-set(CMAKE_PREFIX_PATH "d:/Development/bear-engine/libs/SDL2-2.30.11;d:/Development/bear-engine/libs/spdlog/")
+
+
+
 
 # Set the C standard to C99 (or C11 if preferred)
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_STANDARD_REQUIRED True)
+
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -36,7 +39,8 @@ if(ENABLE_PCH)
     project_options
     INTERFACE
     <atomic>
-    <print>
+    <iostream>
+   # <print>
     <memory>
     <vector>
     <exception>

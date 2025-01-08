@@ -19,8 +19,8 @@
 ## TODO
 
 
-1. Handle SDL2 keys
-2. Draw Triangles
-3. CMAKE will unpack SDL2
-4. CMAKE will unpack the speedlog
+1. ~Handle SDL2 keys~
+2. ~Draw Triangles~
+3. ~CMAKE will unpack SDL2~
+4. ~CMAKE will unpack the speedlog~
 5. Add ImGUI
