@@ -1,13 +1,14 @@
-
-
 set(BEAR_INCLUDE "../include")
+
 
 set(SOURCE_FILES main.cpp
     core/engine.cpp
     log/logger.cpp
     core/safe_initialize.cpp
-    
+    core/context.cpp
 )
+
+
 
 set(SDL_ZIP_FILE "SDL2-2.30.11")
 set(SDL_ZIP_FILE_NAME "SDL2-devel-2.30.11-VC") #because the name of the archive is different than the name of the output folder
@@ -86,18 +87,34 @@ if (NOT SPDLOG_INCLUDE_DIR)
     message(FATAL_ERROR "spdlog headers not found in specified path.")
 endif()
 
+
+
+
+
 # Add the include directory
 include_directories(${SPDLOG_INCLUDE_DIR})
 include_directories(${BEAR_INCLUDE})
+include_directories(../libs/${IMGUI_ZIP_FILE})
+include_directories(../libs/${IMGUI_ZIP_FILE}/backends)
 
-add_executable(${PROJECT_NAME} ${SOURCE_FILES} ${INCLUDE_FILES} "core/context.cpp")
+set(SOURCES_IMGUI  ../libs/${IMGUI_ZIP_FILE}/imgui.cpp
+    ../libs/${IMGUI_ZIP_FILE}/imgui_draw.cpp
+    ../libs/${IMGUI_ZIP_FILE}/imgui_tables.cpp
+    ../libs/${IMGUI_ZIP_FILE}/imgui_demo.cpp
+    ../libs/${IMGUI_ZIP_FILE}/imgui_widgets.cpp
+    ../libs/${IMGUI_ZIP_FILE}/backends/imgui_impl_sdl2.cpp
+    ../libs/${IMGUI_ZIP_FILE}/backends/imgui_impl_sdlrenderer2.cpp)
+
+add_executable(${PROJECT_NAME} ${SOURCE_FILES} ${SOURCES_IMGUI} ${INCLUDE_FILES} )
+
+# Define IMGUI_DEFINE_MATH_OPERATORS
+target_compile_definitions(${PROJECT_NAME} PRIVATE IMGUI_DEFINE_MATH_OPERATORS)
 
 target_link_libraries(
     ${PROJECT_NAME} PRIVATE
     project_options
     SDL2::SDL2
     SDL2::SDL2main
-    
 )
 
 

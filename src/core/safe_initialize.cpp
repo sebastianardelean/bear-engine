@@ -4,7 +4,8 @@ namespace bear::core {
 
     SDL_Window* sdl_safe_create_window(std::string title,
         int32_t w, int32_t h) {
-        SDL_Window* hdlWindow = SDL_CreateWindow(title.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, w, h, SDL_WINDOW_OPENGL);
+        SDL_WindowFlags window_flags = (SDL_WindowFlags)(SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
+        SDL_Window* hdlWindow = SDL_CreateWindow(title.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, w, h, window_flags);
         if (hdlWindow == nullptr) {
             throw SdlCreateWindowException(std::string(SDL_GetError()));
         }

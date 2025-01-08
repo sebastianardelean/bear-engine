@@ -27,7 +27,7 @@ namespace bear
 		AutoRelease<SDL_Texture*, nullptr> g_pTexture;
 
 
-		std::optional<SDL_KeyboardEvent> g_KeyboardEvent;
+	
 
 	private:
 		class SdlGlobalInitializer

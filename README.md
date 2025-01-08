@@ -23,4 +23,6 @@
 2. ~Draw Triangles~
 3. ~CMAKE will unpack SDL2~
 4. ~CMAKE will unpack the speedlog~
-5. Add ImGUI
+5. ~Add ImGUI~
+6. Lights, Camera
+7. Texture Loading
