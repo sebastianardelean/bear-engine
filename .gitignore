@@ -1,4 +1,5 @@
 libs/*
 .vs/*
+.vs/bear-engine/*
 out/*
 src/out/*
