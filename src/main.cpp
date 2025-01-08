@@ -12,18 +12,10 @@
 auto HndlEngine(bear::Context &ctx) -> void {
     
    
-
-    
-    for (size_t i = 0; i < ctx.g_i32WinWidth; i++) {
-        for (size_t j = 0; j < ctx.g_i32WinHeight; j++) {
-            SDL_SetRenderDrawColor(ctx.g_pRenderer.get(), rand() % 255, rand() % 255, rand() % 255, rand() % 255);
-            SDL_RenderDrawPoint(ctx.g_pRenderer.get(), i, j);
-        }
-    }
            
         
         
-    /*const std::vector< SDL_Vertex > verts =
+    const std::vector< SDL_Vertex > verts =
     {
         { SDL_FPoint{ 400, 150 }, SDL_Color{ 255, 0, 0, 255 }, SDL_FPoint{ 0 }, },
         { SDL_FPoint{ 200, 450 }, SDL_Color{ 0, 0, 255, 255 }, SDL_FPoint{ 0 }, },
@@ -32,7 +24,7 @@ auto HndlEngine(bear::Context &ctx) -> void {
 
     SDL_SetRenderDrawColor(ctx.g_pRenderer.get(), 0, 0, 0, SDL_ALPHA_OPAQUE);
     SDL_RenderClear(ctx.g_pRenderer.get());
-    SDL_RenderGeometry(ctx.g_pRenderer.get(), nullptr, verts.data(), verts.size(), nullptr, 0);*/
+    SDL_RenderGeometry(ctx.g_pRenderer.get(), nullptr, verts.data(), verts.size(), nullptr, 0);
             
         
         

@@ -23,8 +23,10 @@ set(ZIP_FILE_SPDLOG "../external/${SPDLOG_ZIP_FILE}.zip")
 set(IMGUI_ZIP_FILE "imgui-1.91.6")
 set(ZIP_FILE_IMGUI "../external/${IMGUI_ZIP_FILE}.zip")
 
-set(DEST_DIR "../libs/")
 
+
+set(DEST_DIR "../libs/")
+file(MAKE_DIRECTORY ${DEST_DIR})
 
 
 
