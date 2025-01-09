@@ -10,6 +10,10 @@ namespace bear::core {
     SDL_Texture* sdl_safe_create_texture(SDL_Renderer* renderer, int32_t width, int32_t height);
     SDL_Texture* sdl_safe_create_texture(SDL_Renderer* renderer, SDL_Window* window);
 
+    SDL_Surface* sdl_safe_image_load(std::string& path);
+
+    SDL_Texture* sdl_safe_create_texture_from_surface(SDL_Renderer* renderer, SDL_Surface *surface);
+
     /*  SDL_Surface* sdl_safe_create_surface(const std::int32_t surfaceWidth, const std::int32_t surfaceHeight);
 
       SDL_Surface* sdl_safe_load_bmp(const std::string& filePath);

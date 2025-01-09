@@ -45,6 +45,23 @@ namespace bear::core {
         return hdlTexture;
     }
 
+    SDL_Surface* sdl_safe_image_load(std::string& path) {
+        SDL_Surface* surface = ::IMG_Load(path.c_str());
+        if (surface == nullptr) {
+            throw SdlLoadImageException(std::string(IMG_GetError()));
+        }
+        return surface;
+    }
+
+    SDL_Texture* sdl_safe_create_texture_from_surface(SDL_Renderer* renderer, SDL_Surface* surface) {
+        SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, surface);
+        if (texture == nullptr) {
+            throw SdlTextureCreateException(std::string(SDL_GetError()));
+        }
+        return texture;
+    }
+
+
     /* SDL_Surface* sdl_safe_create_surface(const std::int32_t surfaceWidth, const std::int32_t surfaceHeight) {
 
          SDL_Surface* hdlSurface = SDL_CreateRGBSurface(0, surfaceWidth, surfaceHeight, 32, 0, 0, 0, 0);

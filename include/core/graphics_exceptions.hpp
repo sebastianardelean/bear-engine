@@ -50,6 +50,15 @@ namespace bear::core {
 
     };
 
+    class SdlLoadImageException : public SdlException {
+    public:
+        SdlLoadImageException(const std::string& msg) :SdlException(msg) {
+
+        }
+
+
+    };
+
     class SdlLoadBmpException : public SdlException {
     public:
         SdlLoadBmpException(const std::string& msg) :SdlException(msg) {

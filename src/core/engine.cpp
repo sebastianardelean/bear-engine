@@ -106,7 +106,7 @@ namespace bear {
 
 			}
 
-			SDL_SetRenderDrawColor(::g_Context.g_pRenderer.get(), 0, 0, 0, 0);
+			SDL_SetRenderDrawColor(::g_Context.g_pRenderer.get(), 255, 255, 255, 255);
 			SDL_RenderClear(::g_Context.g_pRenderer.get());
 
 			hndlFunct(::g_Context);

@@ -6,6 +6,7 @@ set(SOURCE_FILES main.cpp
     log/logger.cpp
     core/safe_initialize.cpp
     core/context.cpp
+    datatypes/texture.cpp
 )
 
 
@@ -14,6 +15,10 @@ set(SDL_ZIP_FILE "SDL2-2.30.11")
 set(SDL_ZIP_FILE_NAME "SDL2-devel-2.30.11-VC") #because the name of the archive is different than the name of the output folder
 set(ZIP_FILE_SDL "../external/${SDL_ZIP_FILE_NAME}.zip")
 
+
+set(SDL_IMAGE_ZIP_FILE "SDL2_image-2.8.4")
+set(SDL_IMAGE_ZIP_FILE_NAME "SDL2_image-devel-2.8.4-VC") #because the name of the archive is different than the name of the output folder
+set(ZIP_FILE_SDL_IMAGE "../external/${SDL_IMAGE_ZIP_FILE_NAME}.zip")
 
 
 set(SPDLOG_ZIP_FILE "spdlog-1.15.0")
@@ -33,6 +38,19 @@ file(MAKE_DIRECTORY ${DEST_DIR})
 # Use execute_process to call unzip
 execute_process(
     COMMAND unzip -o ${ZIP_FILE_SDL} -d ${DEST_DIR}
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    RESULT_VARIABLE UNZIP_RESULT
+    OUTPUT_VARIABLE UNZIP_OUTPUT
+    ERROR_VARIABLE UNZIP_ERROR
+)
+
+if (NOT UNZIP_RESULT EQUAL 0)
+    message(FATAL_ERROR "Unzip failed: ${UNZIP_ERROR}")
+endif()
+
+
+execute_process(
+    COMMAND unzip -o ${ZIP_FILE_SDL_IMAGE} -d ${DEST_DIR}
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     RESULT_VARIABLE UNZIP_RESULT
     OUTPUT_VARIABLE UNZIP_OUTPUT
@@ -74,10 +92,10 @@ endif()
 
 
 
-set(CMAKE_PREFIX_PATH "${CMAKE_SOURCE_DIR}/libs/${SDL_ZIP_FILE};../libs/${SPDLOG_ZIP_FILE}/")
+set(CMAKE_PREFIX_PATH "${CMAKE_SOURCE_DIR}/libs/${SDL_ZIP_FILE}/;../libs/${SPDLOG_ZIP_FILE}/;${CMAKE_SOURCE_DIR}/libs/${SDL_IMAGE_ZIP_FILE}/")
 
 find_package(SDL2 REQUIRED HINTS ../libs/${SDL_ZIP_FILE}/)
-
+find_package(SDL2_image REQUIRED HINTS ../libs/${SDL_IMAGE_ZIP_FILE}/)
 
 # Find spdlog
 find_path(SPDLOG_INCLUDE_DIR
@@ -117,6 +135,8 @@ target_link_libraries(
     project_options
     SDL2::SDL2
     SDL2::SDL2main
+    SDL2_image::SDL2_image
+
 )
 
 

@@ -53,6 +53,7 @@ if(ENABLE_PCH)
 
     <spdlog/spdlog.h>
     <SDL.h>
+    <SDL_image.h>
     <imgui.h>
     <imgui_impl_sdlrenderer2.h>
     <imgui_impl_sdl2.h>
