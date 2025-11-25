@@ -77,11 +77,11 @@ pub fn create_window(window_title: &String, window_width: u32, window_height: u3
             gl::Clear(gl::COLOR_BUFFER_BIT);
         }
 
-        let triangle_vertices: [f32; 18] = [
+        let triangle_vertices: [f32; 24] = [
             //x     y in screen coordinates
-            0.5,  -0.5, 0.0,  1.0, 0.0, 0.0,   // bottom right
-            -0.5, -0.5, 0.0,  0.0, 1.0, 0.0,   // bottom left
-            0.0 ,  0.5, 0.0,  0.0, 0.0, 1.0
+            0.5,  -0.5, 0.0,  1.0, 0.0, 0.0,  0.0,0.0, // bottom right
+            -0.5, -0.5, 0.0,  0.0, 1.0, 0.0,  0.0,0.0, // bottom left
+            0.0 ,  0.5, 0.0,  0.0, 0.0, 1.0,  0.0,0.0
         ];
         let mut shader = Shader::new("shaders/vs.glsl", "shaders/fs.glsl").unwrap_or_else(|err| {
             error_log!("Error loading shaders:{}", err);
@@ -91,8 +91,16 @@ pub fn create_window(window_title: &String, window_width: u32, window_height: u3
         let program:GLuint = shader.build_shader();
         
         let mut draw_manager = DrawManager::new();
-        draw_manager.draw(&triangle_vertices, &mut shader, program, w, h);
+        draw_manager.draw(&triangle_vertices, &mut shader, program, w, h,false);
 
+
+        let shave_vertices: [f32; 32] = [
+            // positions          // colors     // texture coords
+            0.5,  0.5, 0.0,   1.0, 0.0, 0.0,   1.0, 1.0,   // top right
+            0.5, -0.5, 0.0,   0.0, 1.0, 0.0,   1.0, 0.0,   // bottom right
+            -0.5, -0.5, 0.0,   0.0, 0.0, 1.0,   0.0, 0.0,   // bottom left
+            -0.5,  0.5, 0.0,   1.0, 1.0, 0.0,   0.0, 1.0    // top left
+        ];
 
 
         //////////////////////////

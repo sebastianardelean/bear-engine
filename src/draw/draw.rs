@@ -1,6 +1,6 @@
 use std::os::raw::c_void;
 use std::sync::OnceLock;
-use gl::types::{GLint, GLuint};
+use gl::types::{GLint, GLsizei, GLuint};
 use crate::utils::coordinates::ortho;
 use crate::draw::shaders::Shader;
 use crate::draw::textures::Texture;
@@ -16,15 +16,18 @@ impl DrawManager {
         }
     }
 
-    fn init_vao_vbo(&self, vertices: &[f32]) -> (GLuint, GLuint) {
+    fn init_vao_vbo(&self, vertices: &[f32], use_texture:bool, indices:&[u32]) -> (GLuint, GLuint) {
         let mut vao:GLuint = 0;
         let mut vbo:GLuint = 0;
+        let mut ebo:GLuint = 0;
 
         unsafe {
             gl::GenVertexArrays(1, &mut vao);
             gl::GenBuffers(1, &mut vbo);
+            gl::GenBuffers(1, &mut ebo);
 
             gl::BindVertexArray(vao);
+
             gl::BindBuffer(gl::ARRAY_BUFFER, vbo);
             gl::BufferData(
                 gl::ARRAY_BUFFER,
@@ -33,10 +36,18 @@ impl DrawManager {
                 gl::STATIC_DRAW,
             );
 
+            gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, ebo);
+            gl::BufferData(
+                gl::ELEMENT_ARRAY_BUFFER,
+                (indices.len() *std::mem::size_of::<u32>()) as isize,
+                indices.as_ptr() as *const c_void,
+                gl::STATIC_DRAW,
+            );
+
             // position attribute
             gl::VertexAttribPointer(
                 0, 3, gl::FLOAT, gl::FALSE,
-                (6 * std::mem::size_of::<f32>()) as GLint,
+                (8 * std::mem::size_of::<f32>()) as GLsizei,
                 std::ptr::null(),
             );
             gl::EnableVertexAttribArray(0);
@@ -44,10 +55,21 @@ impl DrawManager {
             // color attribute
             gl::VertexAttribPointer(
                 1, 3, gl::FLOAT, gl::FALSE,
-                (6 * std::mem::size_of::<f32>()) as GLint,
+                (8 * std::mem::size_of::<f32>()) as GLsizei,
                 (3 * std::mem::size_of::<f32>()) as *const c_void,
             );
             gl::EnableVertexAttribArray(1);
+
+
+            // // texture attribute
+            // gl::VertexAttribPointer(
+            //     2, 2, gl::FLOAT, gl::FALSE,
+            //     (8 * std::mem::size_of::<f32>()) as GLsizei,
+            //     (6 * std::mem::size_of::<f32>()) as *const c_void,
+            // );
+            // gl::EnableVertexAttribArray(2);
+
+
 
             gl::BindVertexArray(0);
         }
@@ -55,14 +77,22 @@ impl DrawManager {
         return (vao, vbo);
     }
 
-    pub fn draw(&mut self, vertices: &[f32], shader: &mut Shader, program: GLuint, w: i32, h: i32) {
+    pub fn draw(&mut self, vertices: &[f32],
+                shader: &mut Shader,
+                program: GLuint,
+                w: i32,
+                h: i32,
+                use_texture: bool
+
+    ) {
         let (vao, _vbo):(GLuint,GLuint) = *self.vao_vbo.get_or_init(|| {
-            self.init_vao_vbo(vertices)
+            self.init_vao_vbo(vertices,false,&[])
+
         });
 
         shader.apply_shader();
 
-        shader.set_float(String::from("someUniform"), 1.0 as GLint);
+        //shader.set_float(String::from("someUniform"), 1.0 as GLint);
 
 
         unsafe {
