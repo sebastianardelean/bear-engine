@@ -3,7 +3,7 @@ use std::sync::OnceLock;
 use gl::types::{GLint, GLuint};
 use crate::utils::coordinates::ortho;
 use crate::draw::shaders::Shader;
-
+use crate::draw::textures::Texture;
 
 pub struct DrawManager {
     vao_vbo:OnceLock<(u32,u32)>
@@ -79,6 +79,8 @@ impl DrawManager {
         }
 
     }
+
+
 }
 
 
