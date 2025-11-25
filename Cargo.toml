@@ -1,0 +1,22 @@
+[package]
+name = "qcschematic"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+log = {version = "0.4.27", optional = true}
+log4rs = {version = "1.4.0-rc2", optional = true}
+home = "0.5.11"
+
+#rust-guile = "0.1.6"
+
+glfw = "0.60.0"
+gl = "0.10.0"
+imgui = "0.11.0"
+imgui-opengl-renderer = "0.12.1"
+
+
+
+[features]
+default = ["logging"]
+logging = ["log", "log4rs"]
