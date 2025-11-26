@@ -128,21 +128,21 @@ impl Shader {
 
     }
 
-    pub fn set_bool(&mut self,name:String,value: GLboolean) {
+    pub fn set_bool(&mut self,name:String,value: bool) {
         let c_name:CString = CString::new(name.clone()).unwrap();
         unsafe {
             gl::Uniform1i(gl::GetUniformLocation(self.id,c_name.as_ptr()),value as GLint);
         }
     }
 
-    pub fn set_int(&mut self,name:String,value: GLint) {
+    pub fn set_int(&mut self,name:String,value: i32) {
         let c_name:CString = CString::new(name.clone()).unwrap();
         unsafe {
             gl::Uniform1i(gl::GetUniformLocation(self.id,c_name.as_ptr()),value as GLint);
         }
     }
 
-    pub fn set_float(&mut self,name:String,value: GLint) {
+    pub fn set_float(&mut self,name:String,value: f32) {
         let c_name:CString = CString::new(name.clone()).unwrap();
         unsafe {
             gl::Uniform1f(gl::GetUniformLocation(self.id,c_name.as_ptr()),value as GLfloat);

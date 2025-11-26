@@ -1,22 +1,23 @@
 use std::os::raw::c_void;
 use std::sync::OnceLock;
 use gl::types::{GLint, GLsizei, GLuint};
+use crate::draw::bind_texture;
 use crate::utils::coordinates::ortho;
 use crate::draw::shaders::Shader;
 use crate::draw::textures::Texture;
 
 pub struct DrawManager {
-    vao_vbo:OnceLock<(u32,u32)>
+    gpu_buffers:OnceLock<(u32, u32,u32)>
 }
 
 impl DrawManager {
     pub fn new() -> DrawManager {
         return DrawManager{
-            vao_vbo:OnceLock::new(),
+            gpu_buffers:OnceLock::new(),
         }
     }
 
-    fn init_vao_vbo(&self, vertices: &[f32], use_texture:bool, indices:&[u32]) -> (GLuint, GLuint) {
+    fn init_gpu_buffers(&self, vertices: &[f32], indices:&[u32], use_textures:bool) -> (GLuint, GLuint, GLuint) {
         let mut vao:GLuint = 0;
         let mut vbo:GLuint = 0;
         let mut ebo:GLuint = 0;
@@ -60,51 +61,52 @@ impl DrawManager {
             );
             gl::EnableVertexAttribArray(1);
 
-
-            // // texture attribute
-            // gl::VertexAttribPointer(
-            //     2, 2, gl::FLOAT, gl::FALSE,
-            //     (8 * std::mem::size_of::<f32>()) as GLsizei,
-            //     (6 * std::mem::size_of::<f32>()) as *const c_void,
-            // );
-            // gl::EnableVertexAttribArray(2);
-
-
-
-            gl::BindVertexArray(0);
+            if use_textures{
+                // texture attribute
+                gl::VertexAttribPointer(
+                    2, 2, gl::FLOAT, gl::FALSE,
+                    (8 * std::mem::size_of::<f32>()) as GLsizei,
+                    (6 * std::mem::size_of::<f32>()) as *const c_void,
+                );
+                gl::EnableVertexAttribArray(2);
+            }
         }
 
-        return (vao, vbo);
+        return (vao, vbo,ebo);
     }
 
     pub fn draw(&mut self, vertices: &[f32],
+                indices: &[u32],
                 shader: &mut Shader,
-                program: GLuint,
-                w: i32,
-                h: i32,
+                textures:&Vec<(u32,&str)>,
                 use_texture: bool
 
     ) {
-        let (vao, _vbo):(GLuint,GLuint) = *self.vao_vbo.get_or_init(|| {
-            self.init_vao_vbo(vertices,false,&[])
+        let (vao, _vbo,_ebo):(GLuint,GLuint,GLuint) = *self.gpu_buffers.get_or_init(|| {
+            self.init_gpu_buffers(vertices, indices,use_texture)
 
         });
 
+        if use_texture {
+            shader.apply_shader();
+            for (i,texture) in textures.iter().enumerate() {
+                shader.set_int(String::from(texture.1), i as i32);
+
+            }
+            for (i,texture) in textures.iter().enumerate() {
+                bind_texture(texture.0,i as u32);
+            }
+        }
+
+
         shader.apply_shader();
 
-        //shader.set_float(String::from("someUniform"), 1.0 as GLint);
+
 
 
         unsafe {
-
-            let proj = ortho(0.0, w as f32, h as f32, 0.0, -1.0, 1.0);
-            let loc = gl::GetUniformLocation(program, b"uProjection\0".as_ptr() as _);
-            gl::UniformMatrix4fv(loc, 1, gl::FALSE, proj.as_ptr());
-
-            let col = gl::GetUniformLocation(program, b"uColor\0".as_ptr() as _);
-            gl::Uniform3f(col, 1.0, 0.3, 0.2);
             gl::BindVertexArray(vao);
-            gl::DrawArrays(gl::TRIANGLES, 0, 3);
+            gl::DrawElements(gl::TRIANGLES, indices.len() as i32, gl::UNSIGNED_INT, std::ptr::null());
 
         }
 

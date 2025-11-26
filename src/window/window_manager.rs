@@ -4,7 +4,7 @@ use crate::window::imgui_manager::imgui_manager_mod;
 use glfw::{Action, Context, Key, WindowEvent};
 use std::time::{Duration, Instant};
 use gl::types::GLuint;
-use crate::draw::{DrawManager, Shader};
+use crate::draw::{DrawManager, Shader, Texture};
 use crate::editor::EditorState;
 
 pub fn create_window(window_title: &String, window_width: u32, window_height: u32) {
@@ -51,6 +51,59 @@ pub fn create_window(window_title: &String, window_width: u32, window_height: u3
 
     let mut editor_state: EditorState = EditorState::new();
 
+    //Prepare drawing
+    let vertices: [f32; 32] = [
+        // positions          // colors           // texture coords
+         0.5,  0.5, 0.0,   1.0, 0.0, 0.0,   1.0, 1.0, // top right
+         0.5, -0.5, 0.0,   0.0, 1.0, 0.0,   1.0, 0.0, // bottom right
+        -0.5, -0.5, 0.0,   0.0, 0.0, 1.0,   0.0, 0.0, // bottom left
+        -0.5,  0.5, 0.0,   1.0, 1.0, 0.0,   0.0, 1.0  // top left
+    ];
+
+    let indices: [u32;6] = [
+        0, 1, 3,  // first Triangle
+        1, 2, 3   // second Triangle
+    ];
+
+    let mut shader = Shader::new("shaders/vs.glsl", "shaders/fs.glsl").unwrap_or_else(|err| {
+        error_log!("Error loading shaders:{}", err);
+        panic!("Failed to load shaders");
+    });
+
+    let program:GLuint = shader.build_shader();
+
+
+    let mut texture_1:Texture=Texture::new(
+        gl::REPEAT as i32,
+        gl::REPEAT as i32,
+        gl::REPEAT as i32,
+        gl::LINEAR as i32,
+        gl::LINEAR as i32,
+        "textures/wall.png").unwrap_or_else(|err| {
+        error_log!("Error loading textures:{}", err);
+        panic!("Failed to load texture!");
+    });
+
+    let id_1 =texture_1.create_texture();
+
+    let mut texture_2:Texture=Texture::new(
+        gl::REPEAT as i32,
+        gl::REPEAT as i32,
+        gl::REPEAT as i32,
+        gl::LINEAR as i32,
+        gl::LINEAR as i32,
+        "textures/awesomeface.png").unwrap_or_else(|err| {
+        error_log!("Error loading textures:{}", err);
+        panic!("Failed to load texture!");
+    });
+
+    let id_2 =texture_2.create_texture();
+
+    let textures:Vec<(u32, &str)> = vec![(id_1,"texture1"),(id_2,"texture_2")];
+
+    let mut draw_manager = DrawManager::new();
+
+
     while !window.should_close() {
         glfw.poll_events();
 
@@ -76,31 +129,9 @@ pub fn create_window(window_title: &String, window_width: u32, window_height: u3
             gl::ClearColor(0.1, 0.12, 0.15, 1.0);
             gl::Clear(gl::COLOR_BUFFER_BIT);
         }
-
-        let triangle_vertices: [f32; 24] = [
-            //x     y in screen coordinates
-            0.5,  -0.5, 0.0,  1.0, 0.0, 0.0,  0.0,0.0, // bottom right
-            -0.5, -0.5, 0.0,  0.0, 1.0, 0.0,  0.0,0.0, // bottom left
-            0.0 ,  0.5, 0.0,  0.0, 0.0, 1.0,  0.0,0.0
-        ];
-        let mut shader = Shader::new("shaders/vs.glsl", "shaders/fs.glsl").unwrap_or_else(|err| {
-            error_log!("Error loading shaders:{}", err);
-            panic!("Failed to load shaders");
-        });
-
-        let program:GLuint = shader.build_shader();
-        
-        let mut draw_manager = DrawManager::new();
-        draw_manager.draw(&triangle_vertices, &mut shader, program, w, h,false);
+        draw_manager.draw(&vertices, &indices, &mut shader, &textures, true);
 
 
-        let shave_vertices: [f32; 32] = [
-            // positions          // colors     // texture coords
-            0.5,  0.5, 0.0,   1.0, 0.0, 0.0,   1.0, 1.0,   // top right
-            0.5, -0.5, 0.0,   0.0, 1.0, 0.0,   1.0, 0.0,   // bottom right
-            -0.5, -0.5, 0.0,   0.0, 0.0, 1.0,   0.0, 0.0,   // bottom left
-            -0.5,  0.5, 0.0,   1.0, 1.0, 0.0,   0.0, 1.0    // top left
-        ];
 
 
         //////////////////////////
