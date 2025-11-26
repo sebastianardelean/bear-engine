@@ -56,7 +56,8 @@ impl Texture  {
 
         // load image, create texture and generate mipmaps
 
-        let img = ImageReader::open(self.texture_file.clone()).unwrap().decode().unwrap().to_rgba8();
+        let img = ImageReader::open(self.texture_file.clone()).unwrap().decode().unwrap().flipv().to_rgba8();
+        
 
         let (w, h) = img.dimensions();
         let data_ptr = img.as_ptr();

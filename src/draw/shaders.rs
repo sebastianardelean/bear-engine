@@ -116,7 +116,7 @@ impl Shader {
         }
     }
 
-    pub fn build_shader(&mut self) -> GLuint {
+    pub fn build_shader(&mut self) -> u32 {
         let (vs,fs):(GLuint,GLuint) = self.compile();
         return self.link(vs, fs);
 

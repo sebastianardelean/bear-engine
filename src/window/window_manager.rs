@@ -4,7 +4,7 @@ use crate::window::imgui_manager::imgui_manager_mod;
 use glfw::{Action, Context, Key, WindowEvent};
 use std::time::{Duration, Instant};
 use gl::types::GLuint;
-use crate::draw::{bind_texture, DrawManager, Shader, Texture};
+use crate::draw::{bind_texture, RenderManager, Shader, Shape, Texture};
 use crate::editor::EditorState;
 
 pub fn create_window(window_title: &String, window_width: u32, window_height: u32) {
@@ -52,6 +52,17 @@ pub fn create_window(window_title: &String, window_width: u32, window_height: u3
     let mut editor_state: EditorState = EditorState::new();
 
     //Prepare drawing
+
+    trace_log!("Preparing the shaders!\n");
+    let mut shader = Shader::new("shaders/vs.glsl", "shaders/fs.glsl").unwrap_or_else(|err| {
+        error_log!("Error loading shaders:{}", err);
+        panic!("Failed to load shaders");
+    });
+
+    let _shader_program_id:u32 = shader.build_shader();
+
+
+
     let vertices: [f32; 32] = [
         // positions          // colors           // texture coords
          0.5,  0.5, 0.0,   1.0, 0.0, 0.0,   1.0, 1.0, // top right
@@ -65,14 +76,12 @@ pub fn create_window(window_title: &String, window_width: u32, window_height: u3
         1, 2, 3   // second Triangle
     ];
 
-    let mut shader = Shader::new("shaders/vs.glsl", "shaders/fs.glsl").unwrap_or_else(|err| {
-        error_log!("Error loading shaders:{}", err);
-        panic!("Failed to load shaders");
-    });
-
-    let _program:GLuint = shader.build_shader();
+    trace_log!("Preparing GPU Buffers\n");
+    let mut shape:Shape = Shape::new(Vec::from(vertices), Vec::from(indices));
 
 
+
+    trace_log!("Preparing the textures\n");
     let mut texture_1:Texture=Texture::new(
         gl::REPEAT as i32,
         gl::REPEAT as i32,
@@ -101,17 +110,14 @@ pub fn create_window(window_title: &String, window_width: u32, window_height: u3
 
     let textures:Vec<(u32, &str)> = vec![(id_1,"texture1"),(id_2,"texture2")];
 
-    let mut draw_manager = DrawManager::new();
 
-    // shader.apply_shader();
+    trace_log!("Preparing the renderer");
 
 
-    // for (i,texture) in textures.iter().enumerate() {
-    //
-    //     shader.set_int(String::from(texture.1), i as i32);
-    //
-    // }
+    let mut render_manager = RenderManager::new();
+    render_manager.prepare(&mut shader, &textures);
 
+    render_manager.queue_shapes(shape);
 
     while !window.should_close() {
         glfw.poll_events();
@@ -131,15 +137,13 @@ pub fn create_window(window_title: &String, window_width: u32, window_height: u3
         }
 
         // // The rest of the game loop goes here...
-        // --- DRAW TRIANGLE --- //
-
-
         unsafe {
             gl::ClearColor(0.1, 0.12, 0.15, 1.0);
             gl::Clear(gl::COLOR_BUFFER_BIT);
         }
-        draw_manager.draw(&vertices, &indices, &mut shader, &textures, true);
 
+        render_manager.apply_texture(&mut shader,&textures);
+        render_manager.draw(&mut shader);
 
 
 
