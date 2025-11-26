@@ -3,7 +3,7 @@ use std::fs::File;
 use std::io;
 use std::io::{BufReader, Read};
 use std::path::Path;
-use gl::types::{GLboolean, GLchar, GLfloat, GLint, GLuint};
+use gl::types::{GLchar, GLfloat, GLint, GLuint};
 use crate::error_log;
 use crate::utils::*;
 

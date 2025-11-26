@@ -4,7 +4,7 @@ use crate::window::imgui_manager::imgui_manager_mod;
 use glfw::{Action, Context, Key, WindowEvent};
 use std::time::{Duration, Instant};
 use gl::types::GLuint;
-use crate::draw::{DrawManager, Shader, Texture};
+use crate::draw::{bind_texture, DrawManager, Shader, Texture};
 use crate::editor::EditorState;
 
 pub fn create_window(window_title: &String, window_width: u32, window_height: u32) {
@@ -70,7 +70,7 @@ pub fn create_window(window_title: &String, window_width: u32, window_height: u3
         panic!("Failed to load shaders");
     });
 
-    let program:GLuint = shader.build_shader();
+    let _program:GLuint = shader.build_shader();
 
 
     let mut texture_1:Texture=Texture::new(
@@ -79,7 +79,7 @@ pub fn create_window(window_title: &String, window_width: u32, window_height: u3
         gl::REPEAT as i32,
         gl::LINEAR as i32,
         gl::LINEAR as i32,
-        "textures/wall.png").unwrap_or_else(|err| {
+        "textures/container.png").unwrap_or_else(|err| {
         error_log!("Error loading textures:{}", err);
         panic!("Failed to load texture!");
     });
@@ -99,9 +99,18 @@ pub fn create_window(window_title: &String, window_width: u32, window_height: u3
 
     let id_2 =texture_2.create_texture();
 
-    let textures:Vec<(u32, &str)> = vec![(id_1,"texture1"),(id_2,"texture_2")];
+    let textures:Vec<(u32, &str)> = vec![(id_1,"texture1"),(id_2,"texture2")];
 
     let mut draw_manager = DrawManager::new();
+
+    // shader.apply_shader();
+
+
+    // for (i,texture) in textures.iter().enumerate() {
+    //
+    //     shader.set_int(String::from(texture.1), i as i32);
+    //
+    // }
 
 
     while !window.should_close() {
@@ -123,8 +132,8 @@ pub fn create_window(window_title: &String, window_width: u32, window_height: u3
 
         // // The rest of the game loop goes here...
         // --- DRAW TRIANGLE --- //
-        //clear viewport and update size
-        let (w,h) = window.get_framebuffer_size();
+
+
         unsafe {
             gl::ClearColor(0.1, 0.12, 0.15, 1.0);
             gl::Clear(gl::COLOR_BUFFER_BIT);

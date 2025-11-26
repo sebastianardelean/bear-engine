@@ -1,10 +1,10 @@
 use std::os::raw::c_void;
 use std::sync::OnceLock;
-use gl::types::{GLint, GLsizei, GLuint};
+use gl::types::{GLsizei, GLuint};
 use crate::draw::bind_texture;
-use crate::utils::coordinates::ortho;
+
 use crate::draw::shaders::Shader;
-use crate::draw::textures::Texture;
+
 
 pub struct DrawManager {
     gpu_buffers:OnceLock<(u32, u32,u32)>
@@ -83,9 +83,10 @@ impl DrawManager {
 
     ) {
         let (vao, _vbo,_ebo):(GLuint,GLuint,GLuint) = *self.gpu_buffers.get_or_init(|| {
-            self.init_gpu_buffers(vertices, indices,use_texture)
+            self.init_gpu_buffers(vertices, indices, use_texture)
 
         });
+
 
         if use_texture {
             shader.apply_shader();
@@ -93,13 +94,20 @@ impl DrawManager {
                 shader.set_int(String::from(texture.1), i as i32);
 
             }
+            shader.apply_shader();
             for (i,texture) in textures.iter().enumerate() {
                 bind_texture(texture.0,i as u32);
             }
+            // for (i,texture) in textures.iter().enumerate() {
+            //     bind_texture(texture.0,i as u32);
+            // }
+
+        }
+        else {
+            shader.apply_shader();
         }
 
 
-        shader.apply_shader();
 
 
 
