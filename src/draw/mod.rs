@@ -2,6 +2,7 @@ mod render;
 mod shaders;
 mod textures;
 mod shape;
+mod transformations;
 
 pub use shaders::Shader;
 pub use render::RenderManager;

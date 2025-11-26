@@ -30,6 +30,7 @@ pub fn create_window(window_title: &String, window_width: u32, window_height: u3
     window.set_mouse_button_polling(true);
     window.set_scroll_polling(true);
     window.set_resizable(true);
+    window.set_framebuffer_size_polling(true);
 
     gl::load_with(|s| {
         window
@@ -51,7 +52,7 @@ pub fn create_window(window_title: &String, window_width: u32, window_height: u3
 
     let mut editor_state: EditorState = EditorState::new();
 
-    //Prepare drawing
+    //Prepare drawing of the first shape
 
     trace_log!("Preparing the shaders!\n");
     let mut shader = Shader::new("shaders/vs.glsl", "shaders/fs.glsl").unwrap_or_else(|err| {
@@ -61,15 +62,29 @@ pub fn create_window(window_title: &String, window_width: u32, window_height: u3
 
     let _shader_program_id:u32 = shader.build_shader();
 
-
-
-    let vertices: [f32; 32] = [
-        // positions          // colors           // texture coords
-         0.5,  0.5, 0.0,   1.0, 0.0, 0.0,   1.0, 1.0, // top right
-         0.5, -0.5, 0.0,   0.0, 1.0, 0.0,   1.0, 0.0, // bottom right
-        -0.5, -0.5, 0.0,   0.0, 0.0, 1.0,   0.0, 0.0, // bottom left
-        -0.5,  0.5, 0.0,   1.0, 1.0, 0.0,   0.0, 1.0  // top left
+    let vertices_1: [f32; 32] = [
+        // positions           // colors        // tex
+        -0.2,  0.9, 0.0,        1.0,0.0,0.0,     1.0,1.0,  // top right
+        -0.2,  0.1, 0.0,        0.0,1.0,0.0,     1.0,0.0,  // bottom right
+        -0.9,  0.1, 0.0,        0.0,0.0,1.0,     0.0,0.0,  // bottom left
+        -0.9,  0.9, 0.0,        1.0,1.0,0.0,     0.0,1.0,  // top left
     ];
+
+    let vertices_2: [f32; 32] = [
+        // positions           // colors        // tex
+        0.9, -0.1, 0.0,        1.0,0.0,0.0,     1.0,1.0,  // top right
+        0.9, -0.9, 0.0,        0.0,1.0,0.0,     1.0,0.0,  // bottom right
+        0.2, -0.9, 0.0,        0.0,0.0,1.0,     0.0,0.0,  // bottom left
+        0.2, -0.1, 0.0,        1.0,1.0,0.0,     0.0,1.0,  // top left
+    ];
+
+    // let vertices: [f32; 32] = [
+    //     // positions          // colors           // texture coords
+    //      0.5,  0.5, 0.0,   1.0, 0.0, 0.0,   1.0, 1.0, // top right
+    //      0.5, -0.5, 0.0,   0.0, 1.0, 0.0,   1.0, 0.0, // bottom right
+    //     -0.5, -0.5, 0.0,   0.0, 0.0, 1.0,   0.0, 0.0, // bottom left
+    //     -0.5,  0.5, 0.0,   1.0, 1.0, 0.0,   0.0, 1.0  // top left
+    // ];
 
     let indices: [u32;6] = [
         0, 1, 3,  // first Triangle
@@ -77,8 +92,9 @@ pub fn create_window(window_title: &String, window_width: u32, window_height: u3
     ];
 
     trace_log!("Preparing GPU Buffers\n");
-    let mut shape:Shape = Shape::new(Vec::from(vertices), Vec::from(indices));
+    let mut shape_1:Shape = Shape::new(Vec::from(vertices_1), Vec::from(indices));
 
+    let mut shape_2:Shape = Shape::new(Vec::from(vertices_2), Vec::from(indices));
 
 
     trace_log!("Preparing the textures\n");
@@ -117,7 +133,8 @@ pub fn create_window(window_title: &String, window_width: u32, window_height: u3
     let mut render_manager = RenderManager::new();
     render_manager.prepare(&mut shader, &textures);
 
-    render_manager.queue_shapes(shape);
+    render_manager.queue_shapes(shape_1);
+    render_manager.queue_shapes(shape_2);
 
     while !window.should_close() {
         glfw.poll_events();
