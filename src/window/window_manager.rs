@@ -1,11 +1,13 @@
 use crate::draw::{
-    RenderManager, Shader, Shape, Texture, bind_texture, get_identity, rotate, translate,
+    RenderManager, RotationAxis, SCALE_X, SCALE_Y, SCALE_Z, Shader, Shape, Texture, bind_texture,
+    get_identity, rotate, scale, translate,
 };
 use crate::editor::EditorState;
 use crate::window::imgui_manager::imgui_manager_mod;
 use crate::{error_log, trace_log};
 use gl::FALSE;
 use gl::types::GLuint;
+use glam::Vec3;
 use glfw::{Action, Context, Key, WindowEvent};
 use std::os::raw::c_void;
 use std::time::{Duration, Instant};
@@ -189,7 +191,9 @@ pub fn create_window(window_title: &String, window_width: u32, window_height: u3
         render_manager_transformation.apply_texture(&mut shader_transformation, &textures);
 
         let time = glfw.get_time() as f32;
-        let mut transform_matrix = translate() * rotate(time);
+        let mut transform_matrix = scale(0.5, SCALE_X | SCALE_Z | SCALE_Y)
+            * translate(Vec3::new(0.5, -0.5, 0.0))
+            * rotate(time, RotationAxis::ROTATION_Z);
 
         shader_transformation.apply_shader();
         shader_transformation.set_uniform_matrix_4(String::from("transform"), transform_matrix);
