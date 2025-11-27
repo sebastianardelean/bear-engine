@@ -5,19 +5,16 @@ pub mod imgui_manager_mod {
     use imgui::{Condition, Ui};
 
     use std::os::raw::c_void;
-    
-    
-    use imgui_opengl_renderer::Renderer;
+
     use crate::editor::EditorState;
+    use imgui_opengl_renderer::Renderer;
 
     #[derive()]
     pub struct ImGuiWindow {
         imgui_context: imgui::Context,
 
         renderer: Renderer,
-
     }
-
 
     impl ImGuiWindow {
         pub fn new(window: &mut Window) -> ImGuiWindow {
@@ -68,7 +65,12 @@ pub mod imgui_manager_mod {
             }
         }
 
-        pub fn init_frame(&mut self, window: &Window, delta_s: f32, editor_state: &mut EditorState) {
+        pub fn init_frame(
+            &mut self,
+            window: &Window,
+            delta_s: f32,
+            editor_state: &mut EditorState,
+        ) {
             let (width, height) = window.get_framebuffer_size();
             self.imgui_context.io_mut().display_size = [width as f32, height as f32];
 
@@ -95,9 +97,7 @@ pub mod imgui_manager_mod {
         }
 
         fn show_toolbox_window(ui: &mut Ui, state: &mut EditorState) {
-
             ui.window("Toolbox")
-
                 .size([300.0, 100.0], Condition::FirstUseEver)
                 .build(|| {
                     ui.text("Hello, Toolbox!");
@@ -107,12 +107,15 @@ pub mod imgui_manager_mod {
                     }
 
                     ui.popup("modal1", || {
-
-                         ui.input_int("Number of qubits", &mut state.qcircuit_parms.number_of_qubits).build();
+                        ui.input_int(
+                            "Number of qubits",
+                            &mut state.qcircuit_parms.number_of_qubits,
+                        )
+                        .build();
 
                         if ui.button("OK") {
-                             if state.qcircuit_parms.number_of_qubits > 0 {
-                                 ui.close_current_popup();
+                            if state.qcircuit_parms.number_of_qubits > 0 {
+                                ui.close_current_popup();
                             }
                         }
                         ui.same_line();
@@ -120,12 +123,7 @@ pub mod imgui_manager_mod {
                             ui.close_current_popup(); // closes popup
                         }
                     });
-
-
-
-
                 });
-
         }
 
         fn show_menu_bar(ui: &mut Ui) {

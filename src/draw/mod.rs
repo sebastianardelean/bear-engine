@@ -1,11 +1,11 @@
 mod render;
 mod shaders;
-mod textures;
 mod shape;
+mod textures;
 mod transformations;
 
-pub use shaders::Shader;
 pub use render::RenderManager;
-pub use textures::{Texture,bind_texture};
+pub use shaders::Shader;
 pub use shape::Shape;
+pub use textures::{Texture, bind_texture};
 pub use transformations::*;

@@ -1,6 +1,6 @@
+use gl::types::{GLsizei, GLuint};
 use std::os::raw::c_void;
 use std::sync::OnceLock;
-use gl::types::{GLsizei, GLuint};
 
 pub struct Shape {
     vertices: Vec<f32>,
@@ -18,17 +18,18 @@ impl Shape {
     }
 
     pub fn draw(&mut self) {
-        let (vao, _vbo,_ebo):(GLuint,GLuint,GLuint) = *self.gpu_buffers.get_or_init(|| {
-            self.init_gpu_buffers()
-
-        });
+        let (vao, _vbo, _ebo): (GLuint, GLuint, GLuint) =
+            *self.gpu_buffers.get_or_init(|| self.init_gpu_buffers());
 
         unsafe {
             gl::BindVertexArray(vao);
-            gl::DrawElements(gl::TRIANGLES, self.indices.len() as i32, gl::UNSIGNED_INT, std::ptr::null());
-
+            gl::DrawElements(
+                gl::TRIANGLES,
+                self.indices.len() as i32,
+                gl::UNSIGNED_INT,
+                std::ptr::null(),
+            );
         }
-
     }
 
     fn init_gpu_buffers(&self) -> (GLuint, GLuint, GLuint) {
@@ -91,7 +92,6 @@ impl Shape {
                 (6 * std::mem::size_of::<f32>()) as *const c_void,
             );
             gl::EnableVertexAttribArray(2);
-
         }
 
         return (vao, vbo, ebo);

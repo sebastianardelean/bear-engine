@@ -1,13 +1,10 @@
-
 #[cfg(feature = "logging")]
 pub fn init_logger() {
     ::log4rs::init_file("config/log4rs.yaml", Default::default()).unwrap();
 }
 
 #[cfg(not(feature = "logging"))]
-pub fn init_logger() {
-}
-
+pub fn init_logger() {}
 
 // ---------- Log macros  ----------
 #[cfg(feature = "logging")]
@@ -21,7 +18,7 @@ macro_rules! trace_log {
 #[cfg(not(feature = "logging"))]
 #[macro_export]
 macro_rules! trace_log {
-    ($($arg:tt)*) => {}
+    ($($arg:tt)*) => {};
 }
 
 #[cfg(feature = "logging")]
