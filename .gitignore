@@ -1,5 +1,5 @@
-libs/*
-.vs/*
-.vs/bear-engine/*
-out/*
-src/out/*
+build/
+target/
+Cargo.lock
+.idea/
+log/trace.log
