@@ -1,13 +1,10 @@
-use crate::draw::{
-    RenderManager, RotationAxis, SCALE_X, SCALE_Y, SCALE_Z, Shader, Shape, Texture, bind_texture,
-    get_identity, rotate, scale, translate,
-};
+use crate::draw::{RenderManager, RotationAxis, SCALE_X, SCALE_Y, SCALE_Z, Shader, Shape2D, Texture, bind_texture, get_identity, rotate, scale, translate, Shape3D};
 use crate::editor::EditorState;
 use crate::window::imgui_manager::imgui_manager_mod;
 use crate::{error_log, trace_log};
 use gl::FALSE;
 use gl::types::GLuint;
-use glam::Vec3;
+use glam::{Mat4, Vec3};
 use glfw::{Action, Context, Key, WindowEvent};
 use std::os::raw::c_void;
 use std::time::{Duration, Instant};
@@ -50,6 +47,7 @@ pub fn create_window(window_title: &String, window_width: u32, window_height: u3
     });
 
     unsafe {
+        gl::Enable(gl::DEPTH_TEST);
         gl::Viewport(0, 0, window_width as i32, window_height as i32);
         gl::ClearColor(0.1, 0.12, 0.15, 1.0);
     }
@@ -64,59 +62,77 @@ pub fn create_window(window_title: &String, window_width: u32, window_height: u3
     //Prepare drawing of the first shape
 
     trace_log!("Preparing the shaders!\n");
-    let mut shader = Shader::new("shaders/vs.glsl", "shaders/fs.glsl").unwrap_or_else(|err| {
+    let mut shader = Shader::new("shaders/coordinates_vs.glsl", "shaders/coordinates_fs.glsl").unwrap_or_else(|err| {
         error_log!("Error loading shaders:{}", err);
         panic!("Failed to load shaders");
     });
 
-    let mut shader_transformation =
-        Shader::new("shaders/transform_vs.glsl", "shaders/transform_fs.glsl").unwrap_or_else(
-            |err| {
-                //let mut shader_transformation = Shader::new("shaders/vs.glsl", "shaders/fs.glsl").unwrap_or_else(|err| {
-                error_log!("Error loading shaders:{}", err);
-                panic!("Failed to load shaders");
-            },
-        );
 
     let _shader_program_id: u32 = shader.build_shader();
 
-    let _shader_transformation_id: u32 = shader_transformation.build_shader();
 
-    let vertices_1: [f32; 32] = [
-        // positions           // colors        // tex
-        -0.2, 0.9, 0.0, 1.0, 0.0, 0.0, 1.0, 1.0, // top right
-        -0.2, 0.1, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0, // bottom right
-        -0.9, 0.1, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, // bottom left
-        -0.9, 0.9, 0.0, 1.0, 1.0, 0.0, 0.0, 1.0, // top left
+
+    let vertices: [f32; 180] = [
+        -0.5, -0.5, -0.5,  0.0, 0.0,
+        0.5, -0.5, -0.5,  1.0, 0.0,
+        0.5,  0.5, -0.5,  1.0, 1.0,
+        0.5,  0.5, -0.5,  1.0, 1.0,
+        -0.5,  0.5, -0.5,  0.0, 1.0,
+        -0.5, -0.5, -0.5,  0.0, 0.0,
+
+        -0.5, -0.5,  0.5,  0.0, 0.0,
+        0.5, -0.5,  0.5,  1.0, 0.0,
+        0.5,  0.5,  0.5,  1.0, 1.0,
+        0.5,  0.5,  0.5,  1.0, 1.0,
+        -0.5,  0.5,  0.5,  0.0, 1.0,
+        -0.5, -0.5,  0.5,  0.0, 0.0,
+
+        -0.5,  0.5,  0.5,  1.0, 0.0,
+        -0.5,  0.5, -0.5,  1.0, 1.0,
+        -0.5, -0.5, -0.5,  0.0, 1.0,
+        -0.5, -0.5, -0.5,  0.0, 1.0,
+        -0.5, -0.5,  0.5,  0.0, 0.0,
+        -0.5,  0.5,  0.5,  1.0, 0.0,
+
+        0.5,  0.5,  0.5,  1.0, 0.0,
+        0.5,  0.5, -0.5,  1.0, 1.0,
+        0.5, -0.5, -0.5,  0.0, 1.0,
+        0.5, -0.5, -0.5,  0.0, 1.0,
+        0.5, -0.5,  0.5,  0.0, 0.0,
+        0.5,  0.5,  0.5,  1.0, 0.0,
+
+        -0.5, -0.5, -0.5,  0.0, 1.0,
+        0.5, -0.5, -0.5,  1.0, 1.0,
+        0.5, -0.5,  0.5,  1.0, 0.0,
+        0.5, -0.5,  0.5,  1.0, 0.0,
+        -0.5, -0.5,  0.5,  0.0, 0.0,
+        -0.5, -0.5, -0.5,  0.0, 1.0,
+
+        -0.5,  0.5, -0.5,  0.0, 1.0,
+        0.5,  0.5, -0.5,  1.0, 1.0,
+        0.5,  0.5,  0.5,  1.0, 0.0,
+        0.5,  0.5,  0.5,  1.0, 0.0,
+        -0.5,  0.5,  0.5,  0.0, 0.0,
+        -0.5,  0.5, -0.5,  0.0, 1.0
     ];
 
-    let vertices_2: [f32; 32] = [
-        // positions           // colors        // tex
-        0.9, -0.1, 0.0, 1.0, 0.0, 0.0, 1.0, 1.0, // top right
-        0.9, -0.9, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0, // bottom right
-        0.2, -0.9, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, // bottom left
-        0.2, -0.1, 0.0, 1.0, 1.0, 0.0, 0.0, 1.0, // top left
-    ];
-
-    let vertices_3: [f32; 32] = [
-        // positions          // colors           // texture coords
-        0.5, 0.5, 0.0, 1.0, 0.0, 0.0, 1.0, 1.0, // top right
-        0.5, -0.5, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0, // bottom right
-        -0.5, -0.5, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, // bottom left
-        -0.5, 0.5, 0.0, 1.0, 1.0, 0.0, 0.0, 1.0, // top left
-    ];
-
-    let indices: [u32; 6] = [
-        0, 1, 3, // first Triangle
-        1, 2, 3, // second Triangle
+    let cube_positions:[Vec3; 10] = [
+        Vec3::new(0.0,  0.0,  0.0),
+        Vec3::new(2.0,  5.0, -15.0),
+        Vec3::new(-1.5, -2.2, -2.5),
+        Vec3::new(-3.8, -2.0, -12.3),
+        Vec3::new(2.4, -0.4, -3.5),
+        Vec3::new(-1.7,  3.0, -7.5),
+        Vec3::new( 1.3, -2.0, -2.5),
+        Vec3::new( 1.5,  2.0, -2.5),
+        Vec3::new( 1.5,  0.2, -1.5),
+        Vec3::new(-1.3,  1.0, -1.5)
     ];
 
     trace_log!("Preparing GPU Buffers\n");
-    let shape_1: Shape = Shape::new(Vec::from(vertices_1), Vec::from(indices));
+    let shape: Shape3D = Shape3D::new(Vec::from(vertices), Vec::from(cube_positions));
 
-    let shape_2: Shape = Shape::new(Vec::from(vertices_2), Vec::from(indices));
 
-    let shape_3: Shape = Shape::new(Vec::from(vertices_3), Vec::from(indices));
 
     trace_log!("Preparing the textures\n");
     let mut texture_1: Texture = Texture::new(
@@ -132,7 +148,7 @@ pub fn create_window(window_title: &String, window_width: u32, window_height: u3
         panic!("Failed to load texture!");
     });
 
-    let id_1 = texture_1.create_texture();
+
 
     let mut texture_2: Texture = Texture::new(
         gl::REPEAT as i32,
@@ -147,6 +163,7 @@ pub fn create_window(window_title: &String, window_width: u32, window_height: u3
         panic!("Failed to load texture!");
     });
 
+    let id_1 = texture_1.create_texture();
     let id_2 = texture_2.create_texture();
 
     let textures: Vec<(u32, &str)> = vec![(id_1, "texture1"), (id_2, "texture2")];
@@ -156,13 +173,10 @@ pub fn create_window(window_title: &String, window_width: u32, window_height: u3
     let mut render_manager = RenderManager::new();
     render_manager.prepare(&mut shader, &textures);
 
-    render_manager.queue_shapes(shape_1);
-    render_manager.queue_shapes(shape_2);
+    render_manager.queue_shapes(Box::new(shape));
 
-    let mut render_manager_transformation = RenderManager::new();
-    render_manager_transformation.prepare(&mut shader_transformation, &textures);
 
-    render_manager_transformation.queue_shapes(shape_3);
+
 
     while !window.should_close() {
         glfw.poll_events();
@@ -182,23 +196,41 @@ pub fn create_window(window_title: &String, window_width: u32, window_height: u3
         // // The rest of the game loop goes here...
         unsafe {
             gl::ClearColor(0.1, 0.12, 0.15, 1.0);
-            gl::Clear(gl::COLOR_BUFFER_BIT);
+            gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
         }
 
         render_manager.apply_texture(&mut shader, &textures);
-        render_manager.draw(&mut shader);
 
-        render_manager_transformation.apply_texture(&mut shader_transformation, &textures);
+        let mut view_matrix = get_identity();
+        let mut projection_matrix = get_identity();
 
-        let time = glfw.get_time() as f32;
-        let mut transform_matrix = scale(0.5, SCALE_X | SCALE_Z | SCALE_Y)
-            * translate(Vec3::new(0.5, -0.5, 0.0))
-            * rotate(time, RotationAxis::ROTATION_Z);
+        projection_matrix = Mat4::perspective_rh(
+          45f32.to_radians(),
+          window_width as f32 / window_height as f32,
+          0.1,
+          100.0,
+        );
+        view_matrix = view_matrix * translate(Vec3::new(0.0,0.0,-3.0));
 
-        shader_transformation.apply_shader();
-        shader_transformation.set_uniform_matrix_4(String::from("transform"), transform_matrix);
+        shader.set_uniform_matrix_4(String::from("projection"),projection_matrix);
+        shader.set_uniform_matrix_4(String::from("view"),view_matrix);
 
-        render_manager_transformation.draw(&mut shader_transformation);
+
+        for (i, position) in cube_positions.iter().enumerate() {
+            let mut model = Mat4::IDENTITY;
+            model = model*translate(*position);
+            let angle:f32 = 20.0 * i as f32;
+            let axis = Vec3::new(1.0, 0.3, 0.5).normalize();
+            let rotation = Mat4::from_axis_angle(axis, angle.to_radians());
+            model = model*rotation;
+            shader.set_uniform_matrix_4(String::from("model"),model);
+            render_manager.draw(&mut shader);
+        }
+
+
+
+
+
 
         //////////////////////////
         let now = Instant::now();

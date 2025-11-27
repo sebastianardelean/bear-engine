@@ -1,37 +1,22 @@
 use gl::types::{GLsizei, GLuint};
 use std::os::raw::c_void;
 use std::sync::OnceLock;
+use crate::draw::lib::Shape;
 
-pub struct Shape {
+pub struct Shape2D {
     vertices: Vec<f32>,
     indices: Vec<u32>,
     gpu_buffers: OnceLock<(u32, u32, u32)>,
 }
 
-impl Shape {
+impl Shape2D {
     pub fn new(vertices: Vec<f32>, indices: Vec<u32>) -> Self {
-        return Shape {
+        return Shape2D {
             vertices: vertices,
             indices: indices,
             gpu_buffers: OnceLock::new(),
         };
     }
-
-    pub fn draw(&mut self) {
-        let (vao, _vbo, _ebo): (GLuint, GLuint, GLuint) =
-            *self.gpu_buffers.get_or_init(|| self.init_gpu_buffers());
-
-        unsafe {
-            gl::BindVertexArray(vao);
-            gl::DrawElements(
-                gl::TRIANGLES,
-                self.indices.len() as i32,
-                gl::UNSIGNED_INT,
-                std::ptr::null(),
-            );
-        }
-    }
-
     fn init_gpu_buffers(&self) -> (GLuint, GLuint, GLuint) {
         let mut vao: GLuint = 0;
         let mut vbo: GLuint = 0;
@@ -96,4 +81,23 @@ impl Shape {
 
         return (vao, vbo, ebo);
     }
+}
+
+impl Shape for Shape2D {
+    fn draw(&mut self) {
+        let (vao, _vbo, _ebo): (GLuint, GLuint, GLuint) =
+            *self.gpu_buffers.get_or_init(|| self.init_gpu_buffers());
+
+        unsafe {
+            gl::BindVertexArray(vao);
+            gl::DrawElements(
+                gl::TRIANGLES,
+                self.indices.len() as i32,
+                gl::UNSIGNED_INT,
+                std::ptr::null(),
+            );
+        }
+    }
+
+
 }
