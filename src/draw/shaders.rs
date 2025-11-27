@@ -149,4 +149,10 @@ impl Shader {
         }
     }
 
+    pub fn get_uniform_location(&self, name:String)-> i32 {
+        let c_name:CString = CString::new(name.clone()).unwrap();
+        unsafe {
+            return gl::GetUniformLocation(self.id,c_name.as_ptr());
+        }
+    }
 }

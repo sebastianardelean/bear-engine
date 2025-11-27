@@ -3,8 +3,9 @@ use std::os::raw::c_void;
 use crate::window::imgui_manager::imgui_manager_mod;
 use glfw::{Action, Context, Key, WindowEvent};
 use std::time::{Duration, Instant};
+use gl::FALSE;
 use gl::types::GLuint;
-use crate::draw::{bind_texture, RenderManager, Shader, Shape, Texture};
+use crate::draw::{bind_texture, get_identity, rotate, translate, RenderManager, Shader, Shape, Texture};
 use crate::editor::EditorState;
 
 pub fn create_window(window_title: &String, window_width: u32, window_height: u32) {
@@ -60,7 +61,15 @@ pub fn create_window(window_title: &String, window_width: u32, window_height: u3
         panic!("Failed to load shaders");
     });
 
+    let mut shader_transformation = Shader::new("shaders/transform_vs.glsl", "shaders/transform_fs.glsl").unwrap_or_else(|err| {
+    //let mut shader_transformation = Shader::new("shaders/vs.glsl", "shaders/fs.glsl").unwrap_or_else(|err| {
+        error_log!("Error loading shaders:{}", err);
+        panic!("Failed to load shaders");
+    });
+
     let _shader_program_id:u32 = shader.build_shader();
+
+    let _shader_transformation_id:u32 = shader_transformation.build_shader();
 
     let vertices_1: [f32; 32] = [
         // positions           // colors        // tex
@@ -78,13 +87,13 @@ pub fn create_window(window_title: &String, window_width: u32, window_height: u3
         0.2, -0.1, 0.0,        1.0,1.0,0.0,     0.0,1.0,  // top left
     ];
 
-    // let vertices: [f32; 32] = [
-    //     // positions          // colors           // texture coords
-    //      0.5,  0.5, 0.0,   1.0, 0.0, 0.0,   1.0, 1.0, // top right
-    //      0.5, -0.5, 0.0,   0.0, 1.0, 0.0,   1.0, 0.0, // bottom right
-    //     -0.5, -0.5, 0.0,   0.0, 0.0, 1.0,   0.0, 0.0, // bottom left
-    //     -0.5,  0.5, 0.0,   1.0, 1.0, 0.0,   0.0, 1.0  // top left
-    // ];
+    let vertices_3: [f32; 32] = [
+        // positions          // colors           // texture coords
+         0.5,  0.5, 0.0,   1.0, 0.0, 0.0,   1.0, 1.0, // top right
+         0.5, -0.5, 0.0,   0.0, 1.0, 0.0,   1.0, 0.0, // bottom right
+        -0.5, -0.5, 0.0,   0.0, 0.0, 1.0,   0.0, 0.0, // bottom left
+        -0.5,  0.5, 0.0,   1.0, 1.0, 0.0,   0.0, 1.0  // top left
+    ];
 
     let indices: [u32;6] = [
         0, 1, 3,  // first Triangle
@@ -92,10 +101,11 @@ pub fn create_window(window_title: &String, window_width: u32, window_height: u3
     ];
 
     trace_log!("Preparing GPU Buffers\n");
-    let mut shape_1:Shape = Shape::new(Vec::from(vertices_1), Vec::from(indices));
+    let shape_1:Shape = Shape::new(Vec::from(vertices_1), Vec::from(indices));
 
-    let mut shape_2:Shape = Shape::new(Vec::from(vertices_2), Vec::from(indices));
+    let shape_2:Shape = Shape::new(Vec::from(vertices_2), Vec::from(indices));
 
+    let shape_3:Shape = Shape::new(Vec::from(vertices_3), Vec::from(indices));
 
     trace_log!("Preparing the textures\n");
     let mut texture_1:Texture=Texture::new(
@@ -136,6 +146,12 @@ pub fn create_window(window_title: &String, window_width: u32, window_height: u3
     render_manager.queue_shapes(shape_1);
     render_manager.queue_shapes(shape_2);
 
+    let mut render_manager_transformation = RenderManager::new();
+    render_manager_transformation.prepare(&mut shader_transformation, &textures);
+
+    render_manager_transformation.queue_shapes(shape_3);
+
+
     while !window.should_close() {
         glfw.poll_events();
 
@@ -164,11 +180,35 @@ pub fn create_window(window_title: &String, window_width: u32, window_height: u3
 
 
 
+        render_manager_transformation.apply_texture(&mut shader_transformation, &textures);
+
+
+        let time = glfw.get_time() as f32;
+        let mut transform_matrix =translate()*rotate(time);
+
+
+
+
+
+
+
+        shader_transformation.apply_shader();
+        let transform_loc = shader_transformation.get_uniform_location(String::from("transform"));
+
+        unsafe {
+            gl::UniformMatrix4fv(transform_loc,1,FALSE,transform_matrix.to_cols_array().as_ptr());
+
+
+        }
+
+        render_manager_transformation.draw(&mut shader_transformation);
+
         //////////////////////////
         let now = Instant::now();
         let delta = now - last_frame;
         let delta_s = delta.as_secs() as f32 + delta.subsec_nanos() as f32 / 1_000_000_000.0;
         last_frame = now;
+
 
 
 
