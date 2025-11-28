@@ -1,12 +1,11 @@
-use crate::draw::{Shape2D, Texture, bind_texture};
+use crate::draw::{Shape, Texture, bind_texture};
 use gl::types::{GLsizei, GLuint};
 use std::os::raw::c_void;
 use std::sync::OnceLock;
-use crate::draw::lib::Shape;
 use crate::draw::shaders::Shader;
 
 pub struct RenderManager {
-    shapes: Vec<Box<dyn Shape>>,
+    shapes: Vec<Shape>,
 }
 
 impl RenderManager {
@@ -14,7 +13,7 @@ impl RenderManager {
         return RenderManager { shapes: Vec::new() };
     }
 
-    pub fn queue_shapes(&mut self, shape: Box<dyn Shape>) {
+    pub fn queue_shapes(&mut self, shape: Shape) {
         self.shapes.push(shape);
     }
 
@@ -25,7 +24,7 @@ impl RenderManager {
         }
     }
 
-    pub fn apply_texture(&mut self, shader: &mut Shader, textures: &Vec<(u32, &str)>) {
+    pub fn apply_texture(&mut self, textures: &Vec<(u32, &str)>) {
         for (i, texture) in textures.iter().enumerate() {
             bind_texture(texture.0, i as u32);
         }

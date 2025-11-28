@@ -1,4 +1,7 @@
-use crate::draw::{RenderManager, RotationAxis, SCALE_X, SCALE_Y, SCALE_Z, Shader, Shape2D, Texture, bind_texture, get_identity, rotate, scale, translate, Shape3D};
+use crate::draw::{
+    RenderManager, RotationAxis, SCALE_X, SCALE_Y, SCALE_Z, Shader, Shape, Texture, bind_texture,
+    get_identity, rotate, scale, translate,
+};
 use crate::editor::EditorState;
 use crate::window::imgui_manager::imgui_manager_mod;
 use crate::{error_log, trace_log};
@@ -62,15 +65,13 @@ pub fn create_window(window_title: &String, window_width: u32, window_height: u3
     //Prepare drawing of the first shape
 
     trace_log!("Preparing the shaders!\n");
-    let mut shader = Shader::new("shaders/coordinates_vs.glsl", "shaders/coordinates_fs.glsl").unwrap_or_else(|err| {
-        error_log!("Error loading shaders:{}", err);
-        panic!("Failed to load shaders");
-    });
-
+    let mut shader = Shader::new("shaders/coordinates_vs.glsl", "shaders/coordinates_fs.glsl")
+        .unwrap_or_else(|err| {
+            error_log!("Error loading shaders:{}", err);
+            panic!("Failed to load shaders");
+        });
 
     let _shader_program_id: u32 = shader.build_shader();
-
-
 
     let vertices: [f32; 180] = [
         -0.5, -0.5, -0.5,  0.0, 0.0,
@@ -116,23 +117,21 @@ pub fn create_window(window_title: &String, window_width: u32, window_height: u3
         -0.5,  0.5, -0.5,  0.0, 1.0
     ];
 
-    let cube_positions:[Vec3; 10] = [
-        Vec3::new(0.0,  0.0,  0.0),
-        Vec3::new(2.0,  5.0, -15.0),
+    let cube_positions: [Vec3; 10] = [
+        Vec3::new(0.0, 0.0, 0.0),
+        Vec3::new(2.0, 5.0, -15.0),
         Vec3::new(-1.5, -2.2, -2.5),
         Vec3::new(-3.8, -2.0, -12.3),
         Vec3::new(2.4, -0.4, -3.5),
-        Vec3::new(-1.7,  3.0, -7.5),
-        Vec3::new( 1.3, -2.0, -2.5),
-        Vec3::new( 1.5,  2.0, -2.5),
-        Vec3::new( 1.5,  0.2, -1.5),
-        Vec3::new(-1.3,  1.0, -1.5)
+        Vec3::new(-1.7, 3.0, -7.5),
+        Vec3::new(1.3, -2.0, -2.5),
+        Vec3::new(1.5, 2.0, -2.5),
+        Vec3::new(1.5, 0.2, -1.5),
+        Vec3::new(-1.3, 1.0, -1.5),
     ];
 
     trace_log!("Preparing GPU Buffers\n");
-    let shape: Shape3D = Shape3D::new(Vec::from(vertices), Vec::from(cube_positions));
-
-
+    let shape: Shape = Shape::new(Vec::from(vertices), None);
 
     trace_log!("Preparing the textures\n");
     let mut texture_1: Texture = Texture::new(
@@ -147,8 +146,6 @@ pub fn create_window(window_title: &String, window_width: u32, window_height: u3
         error_log!("Error loading textures:{}", err);
         panic!("Failed to load texture!");
     });
-
-
 
     let mut texture_2: Texture = Texture::new(
         gl::REPEAT as i32,
@@ -173,10 +170,7 @@ pub fn create_window(window_title: &String, window_width: u32, window_height: u3
     let mut render_manager = RenderManager::new();
     render_manager.prepare(&mut shader, &textures);
 
-    render_manager.queue_shapes(Box::new(shape));
-
-
-
+    render_manager.queue_shapes(shape);
 
     while !window.should_close() {
         glfw.poll_events();
@@ -199,38 +193,32 @@ pub fn create_window(window_title: &String, window_width: u32, window_height: u3
             gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
         }
 
-        render_manager.apply_texture(&mut shader, &textures);
+        render_manager.apply_texture(&textures);
 
         let mut view_matrix = get_identity();
         let mut projection_matrix = get_identity();
 
         projection_matrix = Mat4::perspective_rh(
-          45f32.to_radians(),
-          window_width as f32 / window_height as f32,
-          0.1,
-          100.0,
+            45f32.to_radians(),
+            window_width as f32 / window_height as f32,
+            0.1,
+            100.0,
         );
-        view_matrix = view_matrix * translate(Vec3::new(0.0,0.0,-3.0));
+        view_matrix = view_matrix * translate(Vec3::new(0.0, 0.0, -3.0));
 
-        shader.set_uniform_matrix_4(String::from("projection"),projection_matrix);
-        shader.set_uniform_matrix_4(String::from("view"),view_matrix);
-
+        shader.set_uniform_matrix_4(String::from("projection"), projection_matrix);
+        shader.set_uniform_matrix_4(String::from("view"), view_matrix);
 
         for (i, position) in cube_positions.iter().enumerate() {
             let mut model = Mat4::IDENTITY;
-            model = model*translate(*position);
-            let angle:f32 = 20.0 * i as f32;
+            model = model * translate(*position);
+            let angle: f32 = 20.0 * i as f32;
             let axis = Vec3::new(1.0, 0.3, 0.5).normalize();
             let rotation = Mat4::from_axis_angle(axis, angle.to_radians());
-            model = model*rotation;
-            shader.set_uniform_matrix_4(String::from("model"),model);
+            model = model * rotation;
+            shader.set_uniform_matrix_4(String::from("model"), model);
             render_manager.draw(&mut shader);
         }
-
-
-
-
-
 
         //////////////////////////
         let now = Instant::now();
