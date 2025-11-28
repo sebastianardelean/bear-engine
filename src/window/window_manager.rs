@@ -1,7 +1,4 @@
-use crate::draw::{
-    RenderManager, RotationAxis, SCALE_X, SCALE_Y, SCALE_Z, Shader, Shape, Texture, bind_texture,
-    get_identity, rotate, scale, translate,
-};
+use crate::draw::{RenderManager, RotationAxis, SCALE_X, SCALE_Y, SCALE_Z, Shader, Shape, Texture, bind_texture, get_identity, rotate, scale, translate, Camera, PITCH, YAW};
 use crate::editor::EditorState;
 use crate::window::imgui_manager::imgui_manager_mod;
 use crate::{error_log, trace_log};
@@ -41,6 +38,7 @@ pub fn create_window(window_title: &String, window_width: u32, window_height: u3
     window.set_scroll_polling(true);
     window.set_resizable(true);
     window.set_framebuffer_size_polling(true);
+    window.set_cursor_mode(glfw::CursorMode::Disabled);
 
     gl::load_with(|s| {
         window
@@ -55,6 +53,7 @@ pub fn create_window(window_title: &String, window_width: u32, window_height: u3
         gl::ClearColor(0.1, 0.12, 0.15, 1.0);
     }
 
+
     trace_log!("Initializing ImGui!");
     let mut imgui_manager = imgui_manager_mod::ImGuiWindow::new(&mut window);
 
@@ -65,13 +64,20 @@ pub fn create_window(window_title: &String, window_width: u32, window_height: u3
     //Prepare drawing of the first shape
 
     trace_log!("Preparing the shaders!\n");
-    let mut shader = Shader::new("shaders/coordinates_vs.glsl", "shaders/coordinates_fs.glsl")
+    let mut shader = Shader::new("shaders/camera_vs.glsl", "shaders/camera_fs.glsl")
         .unwrap_or_else(|err| {
             error_log!("Error loading shaders:{}", err);
             panic!("Failed to load shaders");
         });
 
     let _shader_program_id: u32 = shader.build_shader();
+
+    let mut camera:Camera = Camera::new(
+        Vec3::from([0.0, 0.0, 3.0]),
+        Vec3::from([0.0, 1.0, 0.0]),
+        YAW,
+        PITCH
+    );
 
     let vertices: [f32; 180] = [
         -0.5, -0.5, -0.5,  0.0, 0.0,
@@ -180,9 +186,20 @@ pub fn create_window(window_title: &String, window_width: u32, window_height: u3
 
             match event {
                 WindowEvent::Key(Key::Escape, _, Action::Press, _) => window.set_should_close(true),
+                WindowEvent::Key(Key::W,_,Action::Press,_) =>{},
+                WindowEvent::Key(Key::A,_,Action::Press,_) =>{},
+                WindowEvent::Key(Key::S,_,Action::Press,_) =>{},
+                WindowEvent::Key(Key::D,_,Action::Press,_) => {},
                 WindowEvent::FramebufferSize(w, h) => unsafe {
                     gl::Viewport(0, 0, w, h);
                 },
+                WindowEvent::CursorPos(x,y) =>{
+                    //handle mouse
+                },
+                WindowEvent::Scroll(x_offset,y_offset)=>{
+                //handle scroll on y offset
+                },
+
                 _ => {}
             }
         }
