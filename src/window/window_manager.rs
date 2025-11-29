@@ -1,4 +1,4 @@
-use crate::draw::{RenderManager, RotationAxis, SCALE_X, SCALE_Y, SCALE_Z, Shader, Shape, Texture, bind_texture, get_identity, rotate, scale, translate, Camera, PITCH, YAW};
+use crate::draw::{RenderManager,  Shader, Shape, Texture, translate, Camera, PITCH, YAW};
 use crate::editor::EditorState;
 use crate::window::imgui_manager::imgui_manager_mod;
 use crate::{error_log, trace_log};

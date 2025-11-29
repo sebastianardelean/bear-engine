@@ -27,6 +27,8 @@ pub struct Camera {
 }
 
 impl Camera {
+
+    #[allow(unused)]
     pub fn default(&self) -> Camera {
         return Camera {
             position: Vec3::from([0.0, 0.0, 0.0]),

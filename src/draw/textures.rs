@@ -8,6 +8,7 @@ pub struct Texture {
     texture_file: String,
     texture_wrap_s: i32,
     texture_wrap_t: i32,
+    #[allow(unused)]
     texture_wrap_r: i32,
     texture_filter_min: i32,
     texture_filter_mag: i32,
