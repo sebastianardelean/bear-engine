@@ -245,7 +245,7 @@ pub fn create_window(window_title: &String, window_width: u32, window_height: u3
 
         let view_matrix:Mat4 = camera.view_matrix();
         let projection_matrix:Mat4 = Mat4::perspective_rh(
-            camera.zoom.to_radians(),
+            camera.get_zoom().to_radians(),
             window_width as f32 / window_height as f32,
             0.1,
             100.0,

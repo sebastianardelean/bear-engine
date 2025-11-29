@@ -14,16 +14,16 @@ pub const ZOOM: f32 = 45.0;
 pub const SPEED: f32 = 2.5;
 
 pub struct Camera {
-    pub position: Vec3,
-    pub front: Vec3,
-    pub up: Vec3,
-    pub right: Vec3,
-    pub world_up: Vec3,
-    pub yaw: f32,
-    pub pitch: f32,
-    pub movement_speed: f32,
-    pub mouse_sensitivity: f32,
-    pub zoom: f32,
+    position: Vec3,
+    front: Vec3,
+    up: Vec3,
+    right: Vec3,
+    world_up: Vec3,
+    yaw: f32,
+    pitch: f32,
+    movement_speed: f32,
+    mouse_sensitivity: f32,
+    zoom: f32,
 }
 
 impl Camera {
@@ -123,5 +123,9 @@ impl Camera {
         if self.zoom > 45.0 {
             self.zoom = 45.0
         }
+    }
+
+    pub fn get_zoom(&self) -> f32 {
+        return self.zoom;
     }
 }
