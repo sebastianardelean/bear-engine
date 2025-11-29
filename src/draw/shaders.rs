@@ -153,6 +153,7 @@ impl Shader {
         }
     }
 
+    #[allow(unused)]
     pub fn set_bool(&mut self, name: String, value: bool) {
         let c_name: CString = CString::new(name.clone()).unwrap();
         unsafe {
@@ -163,6 +164,7 @@ impl Shader {
         }
     }
 
+    #[allow(unused)]
     pub fn set_int(&mut self, name: String, value: i32) {
         let c_name: CString = CString::new(name.clone()).unwrap();
         unsafe {
@@ -173,6 +175,7 @@ impl Shader {
         }
     }
 
+    #[allow(unused)]
     pub fn set_float(&mut self, name: String, value: f32) {
         let c_name: CString = CString::new(name.clone()).unwrap();
         unsafe {
@@ -183,6 +186,7 @@ impl Shader {
         }
     }
 
+    #[allow(unused)]
     pub fn get_uniform_location(&self, name: String) -> i32 {
         let c_name: CString = CString::new(name.clone()).unwrap();
         unsafe {
@@ -190,6 +194,7 @@ impl Shader {
         }
     }
 
+    #[allow(unused)]
     pub fn set_uniform_2v(&mut self, name: String, value: glam::Vec2) {
         let c_name: CString = CString::new(name.clone()).unwrap();
         unsafe {
@@ -201,6 +206,7 @@ impl Shader {
         }
     }
 
+    #[allow(unused)]
     pub fn set_uniform_2(&mut self, name: String, x: f32, y: f32) {
         let c_name: CString = CString::new(name.clone()).unwrap();
         unsafe {
@@ -208,6 +214,7 @@ impl Shader {
         }
     }
 
+    #[allow(unused)]
     pub fn set_uniform_3v(&mut self, name: String, value: glam::Vec3) {
         let c_name: CString = CString::new(name.clone()).unwrap();
         unsafe {
@@ -219,6 +226,7 @@ impl Shader {
         }
     }
 
+    #[allow(unused)]
     pub fn set_uniform_3(&mut self, name: String, x: f32, y: f32, z: f32) {
         let c_name: CString = CString::new(name.clone()).unwrap();
         unsafe {
@@ -226,6 +234,7 @@ impl Shader {
         }
     }
 
+    #[allow(unused)]
     pub fn set_uniform_4v(&mut self, name: String, value: glam::Vec4) {
         let c_name: CString = CString::new(name.clone()).unwrap();
         unsafe {
@@ -237,6 +246,7 @@ impl Shader {
         }
     }
 
+    #[allow(unused)]
     pub fn set_uniform_4(&mut self, name: String, x: f32, y: f32, z: f32, w: f32) {
         let c_name: CString = CString::new(name.clone()).unwrap();
         unsafe {
@@ -244,6 +254,7 @@ impl Shader {
         }
     }
 
+    #[allow(unused)]
     pub fn set_uniform_matrix_2(&mut self, name: String, value: glam::Mat2) {
         let c_name: CString = CString::new(name.clone()).unwrap();
         unsafe {
@@ -256,6 +267,7 @@ impl Shader {
         }
     }
 
+    #[allow(unused)]
     pub fn set_uniform_matrix_3(&mut self, name: String, value: glam::Mat3) {
         let c_name: CString = CString::new(name.clone()).unwrap();
         unsafe {
@@ -268,6 +280,7 @@ impl Shader {
         }
     }
 
+    #[allow(unused)]
     pub fn set_uniform_matrix_4(&mut self, name: String, value: glam::Mat4) {
         let c_name: CString = CString::new(name.clone()).unwrap();
         unsafe {
