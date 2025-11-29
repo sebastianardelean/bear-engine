@@ -2,12 +2,11 @@ use crate::draw::{RenderManager, RotationAxis, SCALE_X, SCALE_Y, SCALE_Z, Shader
 use crate::editor::EditorState;
 use crate::window::imgui_manager::imgui_manager_mod;
 use crate::{error_log, trace_log};
-use gl::FALSE;
-use gl::types::GLuint;
 use glam::{Mat4, Vec3};
 use glfw::{Action, Context, Key, WindowEvent};
 use std::os::raw::c_void;
 use std::time::{Duration, Instant};
+use crate::draw::CameraMovement::{Backward, Forward, Left, Right};
 
 pub fn create_window(window_title: &String, window_width: u32, window_height: u32) {
     let mut glfw = glfw::init(glfw::fail_on_errors).unwrap_or_else(|e| {
@@ -57,7 +56,6 @@ pub fn create_window(window_title: &String, window_width: u32, window_height: u3
     trace_log!("Initializing ImGui!");
     let mut imgui_manager = imgui_manager_mod::ImGuiWindow::new(&mut window);
 
-    let mut last_frame = Instant::now();
 
     let mut editor_state: EditorState = EditorState::new();
 
@@ -179,13 +177,15 @@ pub fn create_window(window_title: &String, window_width: u32, window_height: u3
 
     render_manager.queue_shapes(shape);
 
-    let last_x:f32 = window_width as f32 / 2.0;
-    let last_y:f32 = window_height as f32 / 2.0;
+    let mut last_x:f32 = window_width as f32 / 2.0;
+    let mut last_y:f32 = window_height as f32 / 2.0;
 
-    let first_mouse:bool = true;
+    let mut first_mouse:bool = true;
 
-    let delta_time:f32 = 0.0;
-    let last_frame:f32 = 0.0;
+
+
+    let mut last_frame = Instant::now();
+    let mut delta_s: f32 = 0.0;
 
     while !window.should_close() {
         glfw.poll_events();
@@ -195,18 +195,40 @@ pub fn create_window(window_title: &String, window_width: u32, window_height: u3
 
             match event {
                 WindowEvent::Key(Key::Escape, _, Action::Press, _) => window.set_should_close(true),
-                WindowEvent::Key(Key::W,_,Action::Press,_) =>{},
-                WindowEvent::Key(Key::A,_,Action::Press,_) =>{},
-                WindowEvent::Key(Key::S,_,Action::Press,_) =>{},
-                WindowEvent::Key(Key::D,_,Action::Press,_) => {},
+                WindowEvent::Key(Key::W,_,Action::Press,_) =>{
+                    camera.process_keyboard(Forward,delta_s);
+                },
+                WindowEvent::Key(Key::A,_,Action::Press,_) =>{
+                    camera.process_keyboard(Left,delta_s);
+                },
+                WindowEvent::Key(Key::S,_,Action::Press,_) =>{
+                    camera.process_keyboard(Backward,delta_s);
+                },
+                WindowEvent::Key(Key::D,_,Action::Press,_) => {
+                    camera.process_keyboard(Right,delta_s);
+                },
                 WindowEvent::FramebufferSize(w, h) => unsafe {
                     gl::Viewport(0, 0, w, h);
                 },
                 WindowEvent::CursorPos(x,y) =>{
                     //handle mouse
+                    let x_pos :f32 = x as f32;
+                    let y_pos: f32 = y as f32;
+                    if first_mouse {
+                        last_x = x_pos;
+                        last_y = y_pos;
+                        first_mouse = false;
+                    }
+
+                    let x_offset:f32 = x_pos -last_x;
+                    let y_offset:f32 = last_y - y_pos;
+                    last_x = x_pos;
+                    last_y = y_pos;
+                    camera.process_mouse(x_offset,y_offset,true);
                 },
-                WindowEvent::Scroll(x_offset,y_offset)=>{
-                //handle scroll on y offset
+                WindowEvent::Scroll(_x_offset,y_offset)=>{
+                   //handle scroll on y offset
+                    camera.process_mouse_scroll(y_offset as f32);
                 },
 
                 _ => {}
@@ -221,16 +243,15 @@ pub fn create_window(window_title: &String, window_width: u32, window_height: u3
 
         render_manager.apply_texture(&textures);
 
-        let mut view_matrix = get_identity();
-        let mut projection_matrix = get_identity();
-
-        projection_matrix = Mat4::perspective_rh(
-            45f32.to_radians(),
+        let view_matrix:Mat4 = camera.view_matrix();
+        let projection_matrix:Mat4 = Mat4::perspective_rh(
+            camera.zoom.to_radians(),
             window_width as f32 / window_height as f32,
             0.1,
             100.0,
         );
-        view_matrix = view_matrix * translate(Vec3::new(0.0, 0.0, -3.0));
+
+
 
         shader.set_uniform_matrix_4(String::from("projection"), projection_matrix);
         shader.set_uniform_matrix_4(String::from("view"), view_matrix);
@@ -242,6 +263,7 @@ pub fn create_window(window_title: &String, window_width: u32, window_height: u3
             let axis = Vec3::new(1.0, 0.3, 0.5).normalize();
             let rotation = Mat4::from_axis_angle(axis, angle.to_radians());
             model = model * rotation;
+
             shader.set_uniform_matrix_4(String::from("model"), model);
             render_manager.draw(&mut shader);
         }
@@ -249,8 +271,9 @@ pub fn create_window(window_title: &String, window_width: u32, window_height: u3
         //////////////////////////
         let now = Instant::now();
         let delta = now - last_frame;
-        let delta_s = delta.as_secs() as f32 + delta.subsec_nanos() as f32 / 1_000_000_000.0;
+        delta_s = delta.as_secs() as f32 + delta.subsec_nanos() as f32 / 1_000_000_000.0;
         last_frame = now;
+
 
         imgui_manager.init_frame(&window, delta_s, &mut editor_state);
 

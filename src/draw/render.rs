@@ -1,7 +1,4 @@
-use crate::draw::{Shape, Texture, bind_texture};
-use gl::types::{GLsizei, GLuint};
-use std::os::raw::c_void;
-use std::sync::OnceLock;
+use crate::draw::{Shape, bind_texture};
 use crate::draw::shaders::Shader;
 
 pub struct RenderManager {

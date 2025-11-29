@@ -1,4 +1,4 @@
-use glam::{Mat4, Quat, Vec3};
+use glam::{Mat4, Vec3};
 
 pub enum RotationAxis {
     ROTATION_X,

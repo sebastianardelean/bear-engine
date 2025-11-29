@@ -1,4 +1,4 @@
-pub fn ortho(l: f32, r: f32, b: f32, t: f32, n: f32, f: f32) -> [f32; 16] {
+pub fn _ortho(l: f32, r: f32, b: f32, t: f32, n: f32, f: f32) -> [f32; 16] {
     return [
         2.0 / (r - l),
         0.0,
