@@ -72,6 +72,7 @@ pub fn create_window(window_title: &String, window_width: u32, window_height: u3
 
     let _shader_program_id: u32 = shader.build_shader();
 
+    trace_log!("Preparing the camera!\n");
     let mut camera:Camera = Camera::new(
         Vec3::from([0.0, 0.0, 3.0]),
         Vec3::from([0.0, 1.0, 0.0]),
@@ -177,6 +178,14 @@ pub fn create_window(window_title: &String, window_width: u32, window_height: u3
     render_manager.prepare(&mut shader, &textures);
 
     render_manager.queue_shapes(shape);
+
+    let last_x:f32 = window_width as f32 / 2.0;
+    let last_y:f32 = window_height as f32 / 2.0;
+
+    let first_mouse:bool = true;
+
+    let delta_time:f32 = 0.0;
+    let last_frame:f32 = 0.0;
 
     while !window.should_close() {
         glfw.poll_events();
