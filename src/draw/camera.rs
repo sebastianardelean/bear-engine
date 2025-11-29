@@ -95,6 +95,7 @@ impl Camera {
                 self.position -= self.front * velocity;
             }
         }
+        self.position.y = 0.0; //keep user at ground level
     }
 
     pub fn process_mouse(&mut self, x_offset: f32, y_offset: f32, contrain_pitch: bool) {
