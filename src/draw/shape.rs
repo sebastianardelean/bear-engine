@@ -120,7 +120,7 @@ impl Shape {
                 }
                 DrawMode::RenderBoth => {
                     let stride: usize = (COORDINATES_SIZE + TEXTURE_SIZE + NORMAL_SIZE) as usize;
-                    let texture_offset: usize = (COORDINATES_SIZE + TEXTURE_SIZE) as usize;
+                    let texture_offset: usize = (COORDINATES_SIZE + NORMAL_SIZE) as usize;
                     let normal_offset: usize = (COORDINATES_SIZE) as usize;
 
                     // position attribute
@@ -176,8 +176,8 @@ impl Shape {
         } else {
             unsafe {
                 gl::BindVertexArray(vao);
-
-                gl::DrawArrays(gl::TRIANGLES, 0, self.number_of_triangles);
+                gl::DrawArrays(gl::TRIANGLES, 0, 36);
+                //gl::DrawArrays(gl::TRIANGLES, 0, self.number_of_triangles);
             }
         }
     }
