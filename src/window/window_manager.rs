@@ -1,4 +1,4 @@
-use crate::draw::{RenderManager,  Shader, Shape, Texture, translate, Camera, PITCH, YAW};
+use crate::draw::{RenderManager, Shader, Shape, Texture, translate, Camera, PITCH, YAW, scale, SCALE_X, SCALE_Y, SCALE_Z};
 use crate::editor::EditorState;
 use crate::window::imgui_manager::imgui_manager_mod;
 use crate::{error_log, trace_log};
@@ -62,13 +62,24 @@ pub fn create_window(window_title: &String, window_width: u32, window_height: u3
     //Prepare drawing of the first shape
 
     trace_log!("Preparing the shaders!\n");
-    let mut shader = Shader::new("shaders/camera_vs.glsl", "shaders/camera_fs.glsl")
+    let mut lighting_shader:Shader = Shader::new(
+        "shaders/lighting/color_vs.glsl",
+        "shaders/lighting/color_fs.glsl"
+    ).unwrap_or_else(|err| {
+        error_log!("Error loading object shaders:{}", err);
+        panic!("Failed to load object shaders");
+    });
+    let mut light_cube_shader = Shader::new(
+        "shaders/lighting/light_cube_vs.glsl",
+        "shaders/lighting/light_cube_fs.glsl")
         .unwrap_or_else(|err| {
-            error_log!("Error loading shaders:{}", err);
-            panic!("Failed to load shaders");
+            error_log!("Error loading light shaders:{}", err);
+            panic!("Failed to load light shaders");
         });
 
-    let _shader_program_id: u32 = shader.build_shader();
+
+    let _shader: u32 = lighting_shader.build_shader();
+    let _shader: u32 = light_cube_shader.build_shader();
 
     trace_log!("Preparing the camera!\n");
     let mut camera:Camera = Camera::new(
@@ -122,60 +133,18 @@ pub fn create_window(window_title: &String, window_width: u32, window_height: u3
         -0.5,  0.5, -0.5,  0.0, 1.0
     ];
 
-    let cube_positions: [Vec3; 10] = [
-        Vec3::new(0.0, 0.0, 0.0),
-        Vec3::new(2.0, 5.0, -15.0),
-        Vec3::new(-1.5, -2.2, -2.5),
-        Vec3::new(-3.8, -2.0, -12.3),
-        Vec3::new(2.4, -0.4, -3.5),
-        Vec3::new(-1.7, 3.0, -7.5),
-        Vec3::new(1.3, -2.0, -2.5),
-        Vec3::new(1.5, 2.0, -2.5),
-        Vec3::new(1.5, 0.2, -1.5),
-        Vec3::new(-1.3, 1.0, -1.5),
-    ];
+
 
     trace_log!("Preparing GPU Buffers\n");
-    let shape: Shape = Shape::new(Vec::from(vertices), None);
+    let mut shape: Shape = Shape::new(Vec::from(vertices), None);
+    let mut shape_light: Shape = Shape::new(Vec::from(vertices), None);
 
-    trace_log!("Preparing the textures\n");
-    let mut texture_1: Texture = Texture::new(
-        gl::REPEAT as i32,
-        gl::REPEAT as i32,
-        gl::REPEAT as i32,
-        gl::LINEAR as i32,
-        gl::LINEAR as i32,
-        "textures/container.png",
-    )
-    .unwrap_or_else(|err| {
-        error_log!("Error loading textures:{}", err);
-        panic!("Failed to load texture!");
-    });
 
-    let mut texture_2: Texture = Texture::new(
-        gl::REPEAT as i32,
-        gl::REPEAT as i32,
-        gl::REPEAT as i32,
-        gl::LINEAR as i32,
-        gl::LINEAR as i32,
-        "textures/awesomeface.png",
-    )
-    .unwrap_or_else(|err| {
-        error_log!("Error loading textures:{}", err);
-        panic!("Failed to load texture!");
-    });
-
-    let id_1 = texture_1.create_texture();
-    let id_2 = texture_2.create_texture();
-
-    let textures: Vec<(u32, &str)> = vec![(id_1, "texture1"), (id_2, "texture2")];
 
     trace_log!("Preparing the renderer");
 
     let mut render_manager = RenderManager::new();
-    render_manager.prepare(&mut shader, &textures);
 
-    render_manager.queue_shapes(shape);
 
     let mut last_x:f32 = window_width as f32 / 2.0;
     let mut last_y:f32 = window_height as f32 / 2.0;
@@ -241,7 +210,10 @@ pub fn create_window(window_title: &String, window_width: u32, window_height: u3
             gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
         }
 
-        render_manager.apply_texture(&textures);
+        lighting_shader.apply_shader();
+        lighting_shader.set_uniform_3(String::from("objectColor"),1.0,0.5,0.31);
+        lighting_shader.set_uniform_3(String::from("lightColor"),1.0,1.0,1.0);
+        // render_manager.apply_texture(&textures);
 
         let view_matrix:Mat4 = camera.view_matrix();
         let projection_matrix:Mat4 = Mat4::perspective_rh(
@@ -250,23 +222,22 @@ pub fn create_window(window_title: &String, window_width: u32, window_height: u3
             0.1,
             100.0,
         );
+        lighting_shader.set_uniform_matrix_4(String::from("projection"), projection_matrix);
+        lighting_shader.set_uniform_matrix_4(String::from("view"), view_matrix);
+        lighting_shader.set_uniform_matrix_4(String::from("model"),Mat4::IDENTITY);
 
+        render_manager.draw(&mut lighting_shader, &mut shape);
 
+        //and finally render the object
 
-        shader.set_uniform_matrix_4(String::from("projection"), projection_matrix);
-        shader.set_uniform_matrix_4(String::from("view"), view_matrix);
+        light_cube_shader.apply_shader();
+        light_cube_shader.set_uniform_matrix_4(String::from("projection"), projection_matrix);
+        light_cube_shader.set_uniform_matrix_4(String::from("view"), view_matrix);
+        let light_position:Vec3=Vec3::from([1.2,1.0,2.0]);
+        let model_matrix = Mat4::IDENTITY*translate(light_position)*scale(0.2,SCALE_X|SCALE_Y|SCALE_Z);
+        light_cube_shader.set_uniform_matrix_4(String::from("model"), model_matrix);
 
-        for (i, position) in cube_positions.iter().enumerate() {
-            let mut model = Mat4::IDENTITY;
-            model = model * translate(*position);
-            let angle: f32 = 20.0 * i as f32;
-            let axis = Vec3::new(1.0, 0.3, 0.5).normalize();
-            let rotation = Mat4::from_axis_angle(axis, angle.to_radians());
-            model = model * rotation;
-
-            shader.set_uniform_matrix_4(String::from("model"), model);
-            render_manager.draw(&mut shader);
-        }
+        render_manager.draw(&mut light_cube_shader,&mut shape_light);
 
         //////////////////////////
         let now = Instant::now();
