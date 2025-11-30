@@ -1,4 +1,4 @@
-use crate::draw::{RenderManager, Shader, Shape, Texture, translate, Camera, PITCH, YAW, scale, SCALE_X, SCALE_Y, SCALE_Z};
+use crate::draw::{RenderManager, Shader, Shape, Texture, translate, Camera, PITCH, YAW, scale, SCALE_X, SCALE_Y, SCALE_Z, DrawMode};
 use crate::editor::EditorState;
 use crate::window::imgui_manager::imgui_manager_mod;
 use crate::{error_log, trace_log};
@@ -6,6 +6,7 @@ use glam::{Mat4, Vec3};
 use glfw::{Action, Context, Key, WindowEvent};
 use std::os::raw::c_void;
 use std::time::{Duration, Instant};
+use glfw::ffi::glfwGetTime;
 use crate::draw::CameraMovement::{Backward, Forward, Left, Right};
 
 pub fn create_window(window_title: &String, window_width: u32, window_height: u32) {
@@ -63,8 +64,8 @@ pub fn create_window(window_title: &String, window_width: u32, window_height: u3
 
     trace_log!("Preparing the shaders!\n");
     let mut lighting_shader:Shader = Shader::new(
-        "shaders/lighting/basic_light_vs.glsl",
-        "shaders/lighting/basic_light_fs.glsl"
+        "shaders/lighting/materials_vs.glsl",
+        "shaders/lighting/materials_fs.glsl"
     ).unwrap_or_else(|err| {
         error_log!("Error loading object shaders:{}", err);
         panic!("Failed to load object shaders");
@@ -136,8 +137,8 @@ pub fn create_window(window_title: &String, window_width: u32, window_height: u3
 
 
     trace_log!("Preparing GPU Buffers\n");
-    let mut shape: Shape = Shape::new(Vec::from(vertices), None);
-    let mut shape_light: Shape = Shape::new(Vec::from(vertices), None);
+    let mut shape: Shape = Shape::new(Vec::from(vertices), None,DrawMode::Light);
+    let mut shape_light: Shape = Shape::new(Vec::from(vertices), None, DrawMode::Light);
 
 
 
@@ -153,8 +154,8 @@ pub fn create_window(window_title: &String, window_width: u32, window_height: u3
 
 
 
-    let mut last_frame = Instant::now();
-    let mut delta_s: f32 = 0.0;
+    let mut last_frame:f32 = 0.0;
+    let mut delta_time = 0.0;
 
 
     let mut light_pos:Vec3 = Vec3::from([1.2, 1.0, 2.0]);
@@ -162,22 +163,26 @@ pub fn create_window(window_title: &String, window_width: u32, window_height: u3
     while !window.should_close() {
         glfw.poll_events();
 
+        let current_frame = glfw.get_time() as f32;
+        delta_time = current_frame - last_frame;
+        last_frame = current_frame;
+
         for (_, event) in glfw::flush_messages(&events) {
             imgui_manager.handle_event(&event);
 
             match event {
                 WindowEvent::Key(Key::Escape, _, Action::Press, _) => window.set_should_close(true),
                 WindowEvent::Key(Key::W,_,Action::Press,_) =>{
-                    camera.process_keyboard(Forward,delta_s);
+                    camera.process_keyboard(Forward,delta_time);
                 },
                 WindowEvent::Key(Key::A,_,Action::Press,_) =>{
-                    camera.process_keyboard(Left,delta_s);
+                    camera.process_keyboard(Left,delta_time);
                 },
                 WindowEvent::Key(Key::S,_,Action::Press,_) =>{
-                    camera.process_keyboard(Backward,delta_s);
+                    camera.process_keyboard(Backward,delta_time);
                 },
                 WindowEvent::Key(Key::D,_,Action::Press,_) => {
-                    camera.process_keyboard(Right,delta_s);
+                    camera.process_keyboard(Right,delta_time);
                 },
                 WindowEvent::FramebufferSize(w, h) => unsafe {
                     gl::Viewport(0, 0, w, h);
@@ -213,30 +218,51 @@ pub fn create_window(window_title: &String, window_width: u32, window_height: u3
             gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
         }
 
-        light_pos.x = 1.0 + delta_s.to_radians().sin()*2.0;
-        light_pos.y = (delta_s / 2.0).to_radians().sin()*1.0;
+
 
         lighting_shader.apply_shader();
-        lighting_shader.set_uniform_3(String::from("objectColor"),1.0,0.5,0.31);
-        lighting_shader.set_uniform_3(String::from("lightColor"),1.0,1.0,1.0);
-        lighting_shader.set_uniform_3v(String::from("lightPos"),light_pos);
+        lighting_shader.set_uniform_3v(String::from("light.position"),light_pos);
         lighting_shader.set_uniform_3v(String::from("viewPos"), *camera.get_position());
-        // render_manager.apply_texture(&textures);
 
-        let view_matrix:Mat4 = camera.view_matrix();
+        //light properties
+
+        let light_color:Vec3=Vec3::new(
+            (glfw.get_time().sin() * 2.0) as f32,
+            (glfw.get_time().sin() * 0.7) as f32,
+            (glfw.get_time().sin() * 1.3) as f32,
+        ) ;
+
+        let diffuse_color:Vec3 = light_color*Vec3::new(0.5,0.5,0.5);
+        let ambient_color:Vec3 = diffuse_color*Vec3::new(0.2,0.2,0.2);
+
+        lighting_shader.set_uniform_3v(String::from("light.ambient"),ambient_color);
+        lighting_shader.set_uniform_3v(String::from("light.diffuse"),diffuse_color);
+        lighting_shader.set_uniform_3v(String::from("light.specular"),Vec3::new(1.0,1.0,1.0));
+
+        //material properties
+        lighting_shader.set_uniform_3v(String::from("material.ambient"),Vec3::new(1.0,0.5,0.31));
+        lighting_shader.set_uniform_3v(String::from("material.diffuse"),Vec3::new(1.0,0.5,0.31));
+        lighting_shader.set_uniform_3v(String::from("material.specular"),Vec3::new(0.5,0.5,0.5));
+        lighting_shader.set_float(String::from("material.shininess"), 32.0);
+
+        //view/projection transformation
         let projection_matrix:Mat4 = Mat4::perspective_rh(
             camera.get_zoom().to_radians(),
             window_width as f32 / window_height as f32,
             0.1,
             100.0,
         );
+        let view_matrix:Mat4 = camera.view_matrix();
+
         lighting_shader.set_uniform_matrix_4(String::from("projection"), projection_matrix);
         lighting_shader.set_uniform_matrix_4(String::from("view"), view_matrix);
         lighting_shader.set_uniform_matrix_4(String::from("model"),Mat4::IDENTITY);
 
+
+        //render the cube
         render_manager.draw(&mut lighting_shader, &mut shape);
 
-        //and finally render the object
+        //and finally render the lamp
 
         light_cube_shader.apply_shader();
         light_cube_shader.set_uniform_matrix_4(String::from("projection"), projection_matrix);
@@ -248,13 +274,9 @@ pub fn create_window(window_title: &String, window_width: u32, window_height: u3
         render_manager.draw(&mut light_cube_shader,&mut shape_light);
 
         //////////////////////////
-        let now = Instant::now();
-        let delta = now - last_frame;
-        delta_s = delta.as_secs() as f32 + delta.subsec_nanos() as f32 / 1_000_000_000.0;
-        last_frame = now;
 
 
-        imgui_manager.init_frame(&window, delta_s, &mut editor_state);
+        imgui_manager.init_frame(&window, delta_time, &mut editor_state);
 
         window.swap_buffers();
 

@@ -1,18 +1,28 @@
 use gl::types::{GLsizei, GLuint};
 use std::os::raw::c_void;
 use std::sync::OnceLock;
+use glam::Vec2;
+
+#[derive(Clone,Copy)]
+pub enum DrawMode {
+    Color,
+    Texture,
+    Light
+}
 
 pub struct Shape {
     vertices: Vec<f32>,
     indices: Option<Vec<u32>>,
+    draw_mode: DrawMode,
     gpu_buffers: OnceLock<(u32, u32, u32)>,
 }
 
 impl Shape {
-    pub fn new(vertices: Vec<f32>, indices: Option<Vec<u32>>) -> Self {
+    pub fn new(vertices: Vec<f32>, indices: Option<Vec<u32>>,draw_mode: DrawMode) -> Self {
         return Shape {
             vertices: vertices,
             indices: indices,
+            draw_mode: draw_mode,
             gpu_buffers: OnceLock::new(),
         };
     }
@@ -26,7 +36,10 @@ impl Shape {
         unsafe {
             gl::GenVertexArrays(1, &mut vao);
             gl::GenBuffers(1, &mut vbo);
-            gl::GenBuffers(1, &mut ebo);
+            if self.indices.is_some() {
+                gl::GenBuffers(1, &mut ebo);
+            }
+
 
             gl::BindVertexArray(vao);
 
@@ -46,27 +59,79 @@ impl Shape {
                     gl::STATIC_DRAW,
                 );
             }
-            // position attribute
-            gl::VertexAttribPointer(
-                0,
-                3,
-                gl::FLOAT,
-                gl::FALSE,
-                (6 * std::mem::size_of::<f32>()) as GLsizei,
-                std::ptr::null(),
-            );
-            gl::EnableVertexAttribArray(0);
 
-            // texture attribute
-            gl::VertexAttribPointer(
-                1,
-                3,
-                gl::FLOAT,
-                gl::FALSE,
-                (6 * std::mem::size_of::<f32>()) as GLsizei,
-                (3 * std::mem::size_of::<f32>()) as *const c_void,
-            );
-            gl::EnableVertexAttribArray(1);
+
+
+            match self.draw_mode {
+                DrawMode::Color => {
+                    // position attribute
+                    gl::VertexAttribPointer(
+                        0,
+                        3,
+                        gl::FLOAT,
+                        gl::FALSE,
+                        (6 * std::mem::size_of::<f32>()) as GLsizei,
+                        std::ptr::null(),
+                    );
+                    gl::EnableVertexAttribArray(0);
+                    gl::VertexAttribPointer(
+                        1,
+                        3,
+                        gl::FLOAT,
+                        gl::FALSE,
+                        (6 * std::mem::size_of::<f32>()) as GLsizei,
+                        (3 * std::mem::size_of::<f32>()) as *const c_void,
+                    );
+                    gl::EnableVertexAttribArray(1);
+                },
+                DrawMode::Texture => {
+                    // position attribute
+                    gl::VertexAttribPointer(
+                        0,
+                        3,
+                        gl::FLOAT,
+                        gl::FALSE,
+                        (5 * std::mem::size_of::<f32>()) as GLsizei,
+                        std::ptr::null(),
+                    );
+                    gl::EnableVertexAttribArray(0);
+
+                    // texture attribute
+                    gl::VertexAttribPointer(
+                        1,
+                        2,
+                        gl::FLOAT,
+                        gl::FALSE,
+                        (5 * std::mem::size_of::<f32>()) as GLsizei,
+                        (3 * std::mem::size_of::<f32>()) as *const c_void,
+                    );
+                    gl::EnableVertexAttribArray(1);
+                },
+                DrawMode::Light => {
+                    // position attribute
+                    gl::VertexAttribPointer(
+                        0,
+                        3,
+                        gl::FLOAT,
+                        gl::FALSE,
+                        (6 * std::mem::size_of::<f32>()) as GLsizei,
+                        std::ptr::null(),
+                    );
+                    gl::EnableVertexAttribArray(0);
+
+                    // texture attribute
+                    gl::VertexAttribPointer(
+                        1,
+                        3,
+                        gl::FLOAT,
+                        gl::FALSE,
+                        (6 * std::mem::size_of::<f32>()) as GLsizei,
+                        (3 * std::mem::size_of::<f32>()) as *const c_void,
+                    );
+                    gl::EnableVertexAttribArray(1);
+                }
+            }
+
         }
 
         return (vao, vbo, ebo);
