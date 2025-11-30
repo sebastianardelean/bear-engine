@@ -52,7 +52,7 @@ impl Shape {
                 3,
                 gl::FLOAT,
                 gl::FALSE,
-                (5 * std::mem::size_of::<f32>()) as GLsizei,
+                (6 * std::mem::size_of::<f32>()) as GLsizei,
                 std::ptr::null(),
             );
             gl::EnableVertexAttribArray(0);
@@ -60,10 +60,10 @@ impl Shape {
             // texture attribute
             gl::VertexAttribPointer(
                 1,
-                2,
+                3,
                 gl::FLOAT,
                 gl::FALSE,
-                (5 * std::mem::size_of::<f32>()) as GLsizei,
+                (6 * std::mem::size_of::<f32>()) as GLsizei,
                 (3 * std::mem::size_of::<f32>()) as *const c_void,
             );
             gl::EnableVertexAttribArray(1);

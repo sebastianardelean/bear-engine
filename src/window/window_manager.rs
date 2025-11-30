@@ -63,8 +63,8 @@ pub fn create_window(window_title: &String, window_width: u32, window_height: u3
 
     trace_log!("Preparing the shaders!\n");
     let mut lighting_shader:Shader = Shader::new(
-        "shaders/lighting/color_vs.glsl",
-        "shaders/lighting/color_fs.glsl"
+        "shaders/lighting/basic_light_vs.glsl",
+        "shaders/lighting/basic_light_fs.glsl"
     ).unwrap_or_else(|err| {
         error_log!("Error loading object shaders:{}", err);
         panic!("Failed to load object shaders");
@@ -89,48 +89,48 @@ pub fn create_window(window_title: &String, window_width: u32, window_height: u3
         PITCH
     );
 
-    let vertices: [f32; 180] = [
-        -0.5, -0.5, -0.5,  0.0, 0.0,
-        0.5, -0.5, -0.5,  1.0, 0.0,
-        0.5,  0.5, -0.5,  1.0, 1.0,
-        0.5,  0.5, -0.5,  1.0, 1.0,
-        -0.5,  0.5, -0.5,  0.0, 1.0,
-        -0.5, -0.5, -0.5,  0.0, 0.0,
+    let vertices: [f32; 216] = [
+        -0.5, -0.5, -0.5,  0.0,  0.0, -1.0,
+        0.5, -0.5, -0.5,  0.0,  0.0, -1.0,
+        0.5,  0.5, -0.5,  0.0,  0.0, -1.0,
+        0.5,  0.5, -0.5,  0.0,  0.0, -1.0,
+        -0.5,  0.5, -0.5,  0.0,  0.0, -1.0,
+        -0.5, -0.5, -0.5,  0.0,  0.0, -1.0,
 
-        -0.5, -0.5,  0.5,  0.0, 0.0,
-        0.5, -0.5,  0.5,  1.0, 0.0,
-        0.5,  0.5,  0.5,  1.0, 1.0,
-        0.5,  0.5,  0.5,  1.0, 1.0,
-        -0.5,  0.5,  0.5,  0.0, 1.0,
-        -0.5, -0.5,  0.5,  0.0, 0.0,
+        -0.5, -0.5,  0.5,  0.0,  0.0,  1.0,
+        0.5, -0.5,  0.5,  0.0,  0.0,  1.0,
+        0.5,  0.5,  0.5,  0.0,  0.0,  1.0,
+        0.5,  0.5,  0.5,  0.0,  0.0,  1.0,
+        -0.5,  0.5,  0.5,  0.0,  0.0,  1.0,
+        -0.5, -0.5,  0.5,  0.0,  0.0,  1.0,
 
-        -0.5,  0.5,  0.5,  1.0, 0.0,
-        -0.5,  0.5, -0.5,  1.0, 1.0,
-        -0.5, -0.5, -0.5,  0.0, 1.0,
-        -0.5, -0.5, -0.5,  0.0, 1.0,
-        -0.5, -0.5,  0.5,  0.0, 0.0,
-        -0.5,  0.5,  0.5,  1.0, 0.0,
+        -0.5,  0.5,  0.5, -1.0,  0.0,  0.0,
+        -0.5,  0.5, -0.5, -1.0,  0.0,  0.0,
+        -0.5, -0.5, -0.5, -1.0,  0.0,  0.0,
+        -0.5, -0.5, -0.5, -1.0,  0.0,  0.0,
+        -0.5, -0.5,  0.5, -1.0,  0.0,  0.0,
+        -0.5,  0.5,  0.5, -1.0,  0.0,  0.0,
 
-        0.5,  0.5,  0.5,  1.0, 0.0,
-        0.5,  0.5, -0.5,  1.0, 1.0,
-        0.5, -0.5, -0.5,  0.0, 1.0,
-        0.5, -0.5, -0.5,  0.0, 1.0,
-        0.5, -0.5,  0.5,  0.0, 0.0,
-        0.5,  0.5,  0.5,  1.0, 0.0,
+        0.5,  0.5,  0.5,  1.0,  0.0,  0.0,
+        0.5,  0.5, -0.5,  1.0,  0.0,  0.0,
+        0.5, -0.5, -0.5,  1.0,  0.0,  0.0,
+        0.5, -0.5, -0.5,  1.0,  0.0,  0.0,
+        0.5, -0.5,  0.5,  1.0,  0.0,  0.0,
+        0.5,  0.5,  0.5,  1.0,  0.0,  0.0,
 
-        -0.5, -0.5, -0.5,  0.0, 1.0,
-        0.5, -0.5, -0.5,  1.0, 1.0,
-        0.5, -0.5,  0.5,  1.0, 0.0,
-        0.5, -0.5,  0.5,  1.0, 0.0,
-        -0.5, -0.5,  0.5,  0.0, 0.0,
-        -0.5, -0.5, -0.5,  0.0, 1.0,
+        -0.5, -0.5, -0.5,  0.0, -1.0,  0.0,
+        0.5, -0.5, -0.5,  0.0, -1.0,  0.0,
+        0.5, -0.5,  0.5,  0.0, -1.0,  0.0,
+        0.5, -0.5,  0.5,  0.0, -1.0,  0.0,
+        -0.5, -0.5,  0.5,  0.0, -1.0,  0.0,
+        -0.5, -0.5, -0.5,  0.0, -1.0,  0.0,
 
-        -0.5,  0.5, -0.5,  0.0, 1.0,
-        0.5,  0.5, -0.5,  1.0, 1.0,
-        0.5,  0.5,  0.5,  1.0, 0.0,
-        0.5,  0.5,  0.5,  1.0, 0.0,
-        -0.5,  0.5,  0.5,  0.0, 0.0,
-        -0.5,  0.5, -0.5,  0.0, 1.0
+        -0.5,  0.5, -0.5,  0.0,  1.0,  0.0,
+        0.5,  0.5, -0.5,  0.0,  1.0,  0.0,
+        0.5,  0.5,  0.5,  0.0,  1.0,  0.0,
+        0.5,  0.5,  0.5,  0.0,  1.0,  0.0,
+        -0.5,  0.5,  0.5,  0.0,  1.0,  0.0,
+        -0.5,  0.5, -0.5,  0.0,  1.0,  0.0
     ];
 
 
@@ -155,6 +155,9 @@ pub fn create_window(window_title: &String, window_width: u32, window_height: u3
 
     let mut last_frame = Instant::now();
     let mut delta_s: f32 = 0.0;
+
+
+    let mut light_pos:Vec3 = Vec3::from([1.2, 1.0, 2.0]);
 
     while !window.should_close() {
         glfw.poll_events();
@@ -210,9 +213,14 @@ pub fn create_window(window_title: &String, window_width: u32, window_height: u3
             gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
         }
 
+        light_pos.x = 1.0 + delta_s.to_radians().sin()*2.0;
+        light_pos.y = (delta_s / 2.0).to_radians().sin()*1.0;
+
         lighting_shader.apply_shader();
         lighting_shader.set_uniform_3(String::from("objectColor"),1.0,0.5,0.31);
         lighting_shader.set_uniform_3(String::from("lightColor"),1.0,1.0,1.0);
+        lighting_shader.set_uniform_3v(String::from("lightPos"),light_pos);
+        lighting_shader.set_uniform_3v(String::from("viewPos"), *camera.get_position());
         // render_manager.apply_texture(&textures);
 
         let view_matrix:Mat4 = camera.view_matrix();
@@ -233,8 +241,8 @@ pub fn create_window(window_title: &String, window_width: u32, window_height: u3
         light_cube_shader.apply_shader();
         light_cube_shader.set_uniform_matrix_4(String::from("projection"), projection_matrix);
         light_cube_shader.set_uniform_matrix_4(String::from("view"), view_matrix);
-        let light_position:Vec3=Vec3::from([1.2,1.0,2.0]);
-        let model_matrix = Mat4::IDENTITY*translate(light_position)*scale(0.2,SCALE_X|SCALE_Y|SCALE_Z);
+
+        let model_matrix = Mat4::IDENTITY*translate(light_pos)*scale(0.2,SCALE_X|SCALE_Y|SCALE_Z);
         light_cube_shader.set_uniform_matrix_4(String::from("model"), model_matrix);
 
         render_manager.draw(&mut light_cube_shader,&mut shape_light);
