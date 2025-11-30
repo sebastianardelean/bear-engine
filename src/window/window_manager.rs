@@ -5,8 +5,7 @@ use crate::{error_log, trace_log};
 use glam::{Mat4, Vec3};
 use glfw::{Action, Context, Key, WindowEvent};
 use std::os::raw::c_void;
-use std::time::{Duration, Instant};
-use glfw::ffi::glfwGetTime;
+use std::time::{Duration};
 use crate::draw::CameraMovement::{Backward, Forward, Left, Right};
 
 pub fn create_window(window_title: &String, window_width: u32, window_height: u32) {
@@ -137,8 +136,8 @@ pub fn create_window(window_title: &String, window_width: u32, window_height: u3
 
 
     trace_log!("Preparing GPU Buffers\n");
-    let mut shape: Shape = Shape::new(Vec::from(vertices), None,DrawMode::Light);
-    let mut shape_light: Shape = Shape::new(Vec::from(vertices), None, DrawMode::Light);
+    let mut shape: Shape = Shape::new(Vec::from(vertices), None,DrawMode::RenderLight);
+    let mut shape_light: Shape = Shape::new(Vec::from(vertices), None, DrawMode::RenderLight);
 
 
 
@@ -155,16 +154,16 @@ pub fn create_window(window_title: &String, window_width: u32, window_height: u3
 
 
     let mut last_frame:f32 = 0.0;
-    let mut delta_time = 0.0;
 
 
-    let mut light_pos:Vec3 = Vec3::from([1.2, 1.0, 2.0]);
+
+    let light_pos:Vec3 = Vec3::from([1.2, 1.0, 2.0]);
 
     while !window.should_close() {
         glfw.poll_events();
 
         let current_frame = glfw.get_time() as f32;
-        delta_time = current_frame - last_frame;
+        let delta_time = current_frame - last_frame;
         last_frame = current_frame;
 
         for (_, event) in glfw::flush_messages(&events) {

@@ -1,31 +1,54 @@
 use gl::types::{GLsizei, GLuint};
 use std::os::raw::c_void;
 use std::sync::OnceLock;
-use glam::Vec2;
+
+
 
 #[derive(Clone,Copy)]
 pub enum DrawMode {
-    Color,
-    Texture,
-    Light
+    RenderTexture,
+    RenderLight,
+    RenderBoth
 }
+
 
 pub struct Shape {
     vertices: Vec<f32>,
     indices: Option<Vec<u32>>,
     draw_mode: DrawMode,
     gpu_buffers: OnceLock<(u32, u32, u32)>,
+    number_of_triangles:i32
 }
-
+const COORDINATES_INDEX: u32 = 0;
+const COORDINATES_SIZE: i32 = 3;
+const TEXTURE_SIZE: i32 = 2;
+const NORMAL_SIZE: i32 = 3;
 impl Shape {
     pub fn new(vertices: Vec<f32>, indices: Option<Vec<u32>>,draw_mode: DrawMode) -> Self {
+        let len:i32 = vertices.len() as i32;
+        let number_of_triangles:i32 = match draw_mode{
+            DrawMode::RenderTexture=>{
+                len/(COORDINATES_SIZE+TEXTURE_SIZE)
+            },
+            DrawMode::RenderLight =>{
+                len/(COORDINATES_SIZE+NORMAL_SIZE)
+            },
+            DrawMode::RenderBoth=>{
+                len/(COORDINATES_SIZE+TEXTURE_SIZE+NORMAL_SIZE)
+            }
+        };
+
         return Shape {
             vertices: vertices,
             indices: indices,
             draw_mode: draw_mode,
             gpu_buffers: OnceLock::new(),
+            number_of_triangles: number_of_triangles
         };
     }
+
+
+
     fn init_gpu_buffers(
         &self,
     ) -> (GLuint, GLuint, GLuint) {
@@ -59,39 +82,69 @@ impl Shape {
                     gl::STATIC_DRAW,
                 );
             }
-
-
-
             match self.draw_mode {
-                DrawMode::Color => {
+                DrawMode::RenderTexture => {
+                    let stride:usize = (COORDINATES_SIZE+TEXTURE_SIZE) as usize;
+                    let texture_offset:usize = COORDINATES_SIZE as usize;
                     // position attribute
                     gl::VertexAttribPointer(
                         0,
-                        3,
+                        COORDINATES_SIZE,
                         gl::FLOAT,
                         gl::FALSE,
-                        (6 * std::mem::size_of::<f32>()) as GLsizei,
+                        (stride * std::mem::size_of::<f32>()) as GLsizei,
                         std::ptr::null(),
                     );
-                    gl::EnableVertexAttribArray(0);
+                    gl::EnableVertexAttribArray(COORDINATES_INDEX);
+
+                    // texture attribute
                     gl::VertexAttribPointer(
                         1,
-                        3,
+                        TEXTURE_SIZE,
                         gl::FLOAT,
                         gl::FALSE,
-                        (6 * std::mem::size_of::<f32>()) as GLsizei,
-                        (3 * std::mem::size_of::<f32>()) as *const c_void,
+                        (stride * std::mem::size_of::<f32>()) as GLsizei,
+                        (texture_offset * std::mem::size_of::<f32>()) as *const c_void,
                     );
                     gl::EnableVertexAttribArray(1);
                 },
-                DrawMode::Texture => {
+                DrawMode::RenderLight => {
+                    let stride:usize = (COORDINATES_SIZE+NORMAL_SIZE) as usize;
+                    let normal_offset:usize = COORDINATES_SIZE as usize;
                     // position attribute
                     gl::VertexAttribPointer(
                         0,
-                        3,
+                        COORDINATES_SIZE,
                         gl::FLOAT,
                         gl::FALSE,
-                        (5 * std::mem::size_of::<f32>()) as GLsizei,
+                        (stride * std::mem::size_of::<f32>()) as GLsizei,
+                        std::ptr::null(),
+                    );
+                    gl::EnableVertexAttribArray(0);
+                    // light and material attribute
+                    gl::VertexAttribPointer(
+                        1,
+                        NORMAL_SIZE,
+                        gl::FLOAT,
+                        gl::FALSE,
+                        (stride * std::mem::size_of::<f32>()) as GLsizei,
+                        (normal_offset * std::mem::size_of::<f32>()) as *const c_void,
+                    );
+                    gl::EnableVertexAttribArray(1);
+                }
+                DrawMode::RenderBoth => {
+                    let stride:usize = (COORDINATES_SIZE+TEXTURE_SIZE+NORMAL_SIZE) as usize;
+                    let texture_offset:usize = COORDINATES_SIZE as usize;
+                    let normal_offset:usize = (COORDINATES_SIZE+TEXTURE_SIZE) as usize;
+
+
+                    // position attribute
+                    gl::VertexAttribPointer(
+                        0,
+                        COORDINATES_SIZE,
+                        gl::FLOAT,
+                        gl::FALSE,
+                        (stride * std::mem::size_of::<f32>()) as GLsizei,
                         std::ptr::null(),
                     );
                     gl::EnableVertexAttribArray(0);
@@ -99,35 +152,21 @@ impl Shape {
                     // texture attribute
                     gl::VertexAttribPointer(
                         1,
+                        TEXTURE_SIZE,
+                        gl::FLOAT,
+                        gl::FALSE,
+                        (stride * std::mem::size_of::<f32>()) as GLsizei,
+                        (texture_offset * std::mem::size_of::<f32>()) as *const c_void,
+                    );
+                    gl::EnableVertexAttribArray(1);
+                    // light and material attribute
+                    gl::VertexAttribPointer(
                         2,
+                        NORMAL_SIZE,
                         gl::FLOAT,
                         gl::FALSE,
-                        (5 * std::mem::size_of::<f32>()) as GLsizei,
-                        (3 * std::mem::size_of::<f32>()) as *const c_void,
-                    );
-                    gl::EnableVertexAttribArray(1);
-                },
-                // this is not the best option. what happens if I have texture and light? probably need to specify exactly the offsets and the stride
-                DrawMode::Light => {
-                    // position attribute
-                    gl::VertexAttribPointer(
-                        0,
-                        3,
-                        gl::FLOAT,
-                        gl::FALSE,
-                        (6 * std::mem::size_of::<f32>()) as GLsizei,
-                        std::ptr::null(),
-                    );
-                    gl::EnableVertexAttribArray(0);
-
-                    // texture attribute
-                    gl::VertexAttribPointer(
-                        1,
-                        3,
-                        gl::FLOAT,
-                        gl::FALSE,
-                        (6 * std::mem::size_of::<f32>()) as GLsizei,
-                        (3 * std::mem::size_of::<f32>()) as *const c_void,
+                        (stride * std::mem::size_of::<f32>()) as GLsizei,
+                        (normal_offset * std::mem::size_of::<f32>()) as *const c_void,
                     );
                     gl::EnableVertexAttribArray(1);
                 }
@@ -156,7 +195,7 @@ impl Shape {
             unsafe {
                 gl::BindVertexArray(vao);
 
-                gl::DrawArrays(gl::TRIANGLES, 0, 36);
+                gl::DrawArrays(gl::TRIANGLES, 0, self.number_of_triangles);
             }
         }
     }
