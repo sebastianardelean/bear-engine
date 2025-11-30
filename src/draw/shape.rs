@@ -107,6 +107,7 @@ impl Shape {
                     );
                     gl::EnableVertexAttribArray(1);
                 },
+                // this is not the best option. what happens if I have texture and light? probably need to specify exactly the offsets and the stride
                 DrawMode::Light => {
                     // position attribute
                     gl::VertexAttribPointer(
