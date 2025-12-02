@@ -1,5 +1,5 @@
 use crate::draw::CameraMovement::{Backward, Forward, Left, Right};
-use crate::draw::{Camera, DrawMode, PITCH, SCALE_X, SCALE_Y, SCALE_Z, Shader, Shape, Texture, YAW, scale, translate, render_prepare, render, render_bind_texture, rotate};
+use crate::draw::{Camera, DrawMode, PITCH, SCALE_X, SCALE_Y, SCALE_Z, Shader, Shape, Texture, YAW, scale, translate, render_prepare, render, render_bind_texture, rotate, Light};
 use crate::editor::EditorState;
 use crate::window::imgui_manager::imgui_manager_mod;
 use crate::{error_log, trace_log};
@@ -245,7 +245,9 @@ pub fn create_window(window_title: &String, window_width: u32, window_height: u3
 
     let mut last_frame: f32 = 0.0;
 
-    let light_pos: Vec3 = Vec3::from([1.2, 1.0, 2.0]);
+    let mut light = Light::new(Vec::from(positions_light));
+
+
 
     while !window.should_close() {
         glfw.poll_events();
@@ -310,56 +312,9 @@ pub fn create_window(window_title: &String, window_width: u32, window_height: u3
         lighting_shader.set_float(String::from("material.shininess"), 32.0);
 
 
-        // directional light
-        lighting_shader.set_uniform_3v(String::from("dirLight.direction"), Vec3::new(-0.2, -1.0, -0.3));
-        lighting_shader.set_uniform_3v(String::from("dirLight.ambient"), Vec3::new(0.05, 0.05, 0.05));
-        lighting_shader.set_uniform_3v(String::from("dirLight.diffuse"), Vec3::new(0.4, 0.4, 0.4));
-        lighting_shader.set_uniform_3v(String::from("dirLight.specular"), Vec3::new(0.5, 0.5, 0.5));
-        // point light 1
-        lighting_shader.set_uniform_3v(String::from("pointLights[0].position"), positions_light[0]);
-        lighting_shader.set_uniform_3v(String::from("pointLights[0].ambient"), Vec3::new(0.05, 0.05, 0.05));
-        lighting_shader.set_uniform_3v(String::from("pointLights[0].diffuse"), Vec3::new(0.8, 0.8, 0.8));
-        lighting_shader.set_uniform_3v(String::from("pointLights[0].specular"), Vec3::new(1.0, 1.0, 1.0));
-        lighting_shader.set_float(String::from("pointLights[0].constant"), 1.0);
-        lighting_shader.set_float(String::from("pointLights[0].linear"), 0.09);
-        lighting_shader.set_float(String::from("pointLights[0].quadratic"), 0.032);
-        // point light 2
-        lighting_shader.set_uniform_3v(String::from("pointLights[1].position"), positions_light[1]);
-        lighting_shader.set_uniform_3v(String::from("pointLights[1].ambient"), Vec3::new(0.05, 0.05, 0.05));
-        lighting_shader.set_uniform_3v(String::from("pointLights[1].diffuse"), Vec3::new(0.8, 0.8, 0.8));
-        lighting_shader.set_uniform_3v(String::from("pointLights[1].specular"), Vec3::new(1.0, 1.0, 1.0));
-        lighting_shader.set_float(String::from("pointLights[1].constant"), 1.0);
-        lighting_shader.set_float(String::from("pointLights[1].linear"), 0.09);
-        lighting_shader.set_float(String::from("pointLights[1].quadratic"), 0.032);
-        // point light 3
-        lighting_shader.set_uniform_3v(String::from("pointLights[2].position"), positions_light[2]);
-        lighting_shader.set_uniform_3v(String::from("pointLights[2].ambient"), Vec3::new(0.05, 0.05, 0.05));
-        lighting_shader.set_uniform_3v(String::from("pointLights[2].diffuse"), Vec3::new(0.8, 0.8, 0.8));
-        lighting_shader.set_uniform_3v(String::from("pointLights[2].specular"), Vec3::new(1.0, 1.0, 1.0));
-        lighting_shader.set_float(String::from("pointLights[2].constant"), 1.0);
-        lighting_shader.set_float(String::from("pointLights[2].linear"), 0.09);
-        lighting_shader.set_float(String::from("pointLights[2].quadratic"), 0.032);
-        // point light 4
-        lighting_shader.set_uniform_3v(String::from("pointLights[3].position"), positions_light[3]);
-        lighting_shader.set_uniform_3v(String::from("pointLights[3].ambient"), Vec3::new(0.05, 0.05, 0.05));
-        lighting_shader.set_uniform_3v(String::from("pointLights[3].diffuse"), Vec3::new(0.8, 0.8, 0.8));
-        lighting_shader.set_uniform_3v(String::from("pointLights[3].specular"), Vec3::new(1.0, 1.0, 1.0));
-        lighting_shader.set_float(String::from("pointLights[3].constant"), 1.0);
-        lighting_shader.set_float(String::from("pointLights[3].linear"), 0.09);
-        lighting_shader.set_float(String::from("pointLights[3].quadratic"), 0.032);
-        // spotLight
-        lighting_shader.set_uniform_3v(String::from("spotLight.position"), *camera.get_position());
-        lighting_shader.set_uniform_3v(String::from("spotLight.direction"), *camera.get_front());
-        lighting_shader.set_uniform_3v(String::from("spotLight.ambient"), Vec3::new(0.0, 0.0, 0.0));
-        lighting_shader.set_uniform_3v(String::from("spotLight.diffuse"), Vec3::new(1.0, 1.0, 1.0));
-        lighting_shader.set_uniform_3v(String::from("spotLight.specular"), Vec3::new(1.0, 1.0, 1.0));
-        lighting_shader.set_float(String::from("spotLight.constant"), 1.0);
-        lighting_shader.set_float(String::from("spotLight.linear"), 0.09);
-        lighting_shader.set_float(String::from("spotLight.quadratic"), 0.032);
-        lighting_shader.set_float(String::from("spotLight.cutOff"), 12.5_f32.to_radians().cos());
-        lighting_shader.set_float(String::from("spotLight.outerCutOff"), 15.0_f32.to_radians().cos());
-
-
+        light.apply_directional_light(&mut lighting_shader);
+        light.apply_default_light_properties(&mut lighting_shader, &mut camera);
+        light.apply_spotlight(&mut lighting_shader, &mut camera);
 
         //view/projection transformation
         let projection_matrix: Mat4 = Mat4::perspective_rh(
