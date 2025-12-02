@@ -13,6 +13,7 @@ pub const SENSITIVITY: f32 = 0.1;
 pub const ZOOM: f32 = 45.0;
 pub const SPEED: f32 = 2.5;
 
+
 pub struct Camera {
     position: Vec3,
     front: Vec3,
@@ -129,4 +130,43 @@ impl Camera {
     pub fn get_zoom(&self) -> f32 {
         return self.zoom;
     }
+
+
+    // Getters for Vec3 fields
+    pub fn get_position(&self) -> &Vec3 {
+        return &self.position;
+    }
+
+    pub fn get_front(&self) -> &Vec3 {
+        return &self.front;
+    }
+
+    pub fn get_up(&self) -> &Vec3 {
+        return &self.up;
+    }
+
+    pub fn get_right(&self) -> &Vec3 {
+        return &self.right;
+    }
+
+    pub fn get_world_up(&self) -> &Vec3 {
+        return &self.world_up;
+    }
+
+
+    pub fn get_yaw(&self) -> f32 {
+        return self.yaw;
+    }
+
+    pub fn get_pitch(&self) -> f32 {
+        return self.pitch;
+    }
+
+    pub fn get_movement_speed(&self) -> f32 {
+        return self.movement_speed;
+    }
+    pub fn get_mouse_sensitivity(&self) ->f32 {
+        return self.mouse_sensitivity;
+    }
+
 }

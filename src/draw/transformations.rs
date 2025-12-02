@@ -33,10 +33,14 @@ pub fn scale(factor: f32, axes: ScaleMask) -> Mat4 {
 }
 
 #[allow(unused)]
-pub fn rotate(angle: f32, rotation_axis: RotationAxis) -> Mat4 {
+pub fn rotate_around_one_axis(angle: f32, rotation_axis: RotationAxis) -> Mat4 {
     return match rotation_axis {
         RotationAxis::RotationX => Mat4::from_rotation_x(angle),
         RotationAxis::RotationY => Mat4::from_rotation_y(angle),
         RotationAxis::RotationZ => Mat4::from_rotation_z(angle),
     };
+}
+
+pub fn rotate(angle: f32, rotation_axis: Vec3) -> Mat4 {
+    return Mat4::from_axis_angle(rotation_axis, angle);
 }
