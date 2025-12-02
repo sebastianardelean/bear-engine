@@ -61,8 +61,8 @@ pub fn create_window(window_title: &String, window_width: u32, window_height: u3
 
     trace_log!("Preparing the shaders!\n");
     let mut lighting_shader: Shader = Shader::new(
-        "shaders/lighting/light_caster_vs.glsl",
-        "shaders/lighting/light_caster_fs.glsl",
+        "shaders/lighting/multiple_lights_vs.glsl",
+        "shaders/lighting/multiple_lights_fs.glsl",
     )
     .unwrap_or_else(|err| {
         error_log!("Error loading object shaders:{}", err);
@@ -190,6 +190,13 @@ pub fn create_window(window_title: &String, window_width: u32, window_height: u3
         Vec3::new(-1.3, 1.0, -1.5),
     ];
 
+    let positions_light:[Vec3;4] = [
+        Vec3::new( 0.7,  0.2,  2.0),
+        Vec3::new( 2.3, -3.3, -4.0),
+        Vec3::new(-4.0,  2.0, -12.0),
+        Vec3::new( 0.0,  0.0, -3.0)
+    ];
+
     trace_log!("Preparing GPU Buffers\n");
     let mut shape: Shape = Shape::new(Vec::from(vertices), None, DrawMode::RenderBoth);
     let mut shape_light: Shape = Shape::new(Vec::from(vertices_light), None, DrawMode::RenderLight);
@@ -261,7 +268,7 @@ pub fn create_window(window_title: &String, window_width: u32, window_height: u3
                 WindowEvent::Key(Key::S, _, Action::Press| Action::Repeat, _) => {
                     camera.process_keyboard(Backward, delta_time);
                 }
-                WindowEvent::Key(Key::D, _, Action::Press| Action::Repeatsssssssssssss, _) => {
+                WindowEvent::Key(Key::D, _, Action::Press| Action::Repeat, _) => {
                     camera.process_keyboard(Right, delta_time);
                 }
                 WindowEvent::FramebufferSize(w, h) => unsafe {
@@ -298,34 +305,61 @@ pub fn create_window(window_title: &String, window_width: u32, window_height: u3
             gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
         }
 
-        //activate shader for setting uniforms/drawing objects
         lighting_shader.apply_shader();
-        lighting_shader.set_uniform_3v(String::from("light.position"), *camera.get_position());
-        lighting_shader.set_uniform_3v(String::from("light.direction"), *camera.get_front());
-        lighting_shader.set_float(String::from("light.cutOff"),12.5_f32.to_radians().cos());
-        (lighting_shader).set_float(String::from("light.outerCutOff"),17.5_f32.to_radians().sin());
         lighting_shader.set_uniform_3v(String::from("viewPos"),*camera.get_position());
-
-        //light properties
-        // let light_color:Vec3=Vec3::new(
-        //     (glfw.get_time().sin() * 2.0) as f32,
-        //     (glfw.get_time().sin() * 0.7) as f32,
-        //     (glfw.get_time().sin() * 1.3) as f32,
-        // ) ;
-        //
-        // let diffuse_color:Vec3 = light_color*Vec3::new(0.5,0.5,0.5);
-        // let ambient_color:Vec3 = diffuse_color*Vec3::new(0.2,0.2,0.2);
-
-        lighting_shader.set_uniform_3v(String::from("light.ambient"), Vec3::new(0.1, 0.1, 0.1));
-        lighting_shader.set_uniform_3v(String::from("light.diffuse"), Vec3::new(0.8, 0.8, 0.8));
-        lighting_shader.set_uniform_3v(String::from("light.specular"), Vec3::new(1.0, 1.0, 1.0));
-        lighting_shader.set_float(String::from("light.constant"), 1.0);
-        lighting_shader.set_float(String::from("light.linear"), 0.09);
-        lighting_shader.set_float(String::from("light.quadratic"), 0.032);
-
-        //material properties
-        //lighting_shader.set_uniform_3v(String::from("material.specular"), Vec3::new(0.5, 0.5, 0.5));
         lighting_shader.set_float(String::from("material.shininess"), 32.0);
+
+
+        // directional light
+        lighting_shader.set_uniform_3v(String::from("dirLight.direction"), Vec3::new(-0.2, -1.0, -0.3));
+        lighting_shader.set_uniform_3v(String::from("dirLight.ambient"), Vec3::new(0.05, 0.05, 0.05));
+        lighting_shader.set_uniform_3v(String::from("dirLight.diffuse"), Vec3::new(0.4, 0.4, 0.4));
+        lighting_shader.set_uniform_3v(String::from("dirLight.specular"), Vec3::new(0.5, 0.5, 0.5));
+        // point light 1
+        lighting_shader.set_uniform_3v(String::from("pointLights[0].position"), positions_light[0]);
+        lighting_shader.set_uniform_3v(String::from("pointLights[0].ambient"), Vec3::new(0.05, 0.05, 0.05));
+        lighting_shader.set_uniform_3v(String::from("pointLights[0].diffuse"), Vec3::new(0.8, 0.8, 0.8));
+        lighting_shader.set_uniform_3v(String::from("pointLights[0].specular"), Vec3::new(1.0, 1.0, 1.0));
+        lighting_shader.set_float(String::from("pointLights[0].constant"), 1.0);
+        lighting_shader.set_float(String::from("pointLights[0].linear"), 0.09);
+        lighting_shader.set_float(String::from("pointLights[0].quadratic"), 0.032);
+        // point light 2
+        lighting_shader.set_uniform_3v(String::from("pointLights[1].position"), positions_light[1]);
+        lighting_shader.set_uniform_3v(String::from("pointLights[1].ambient"), Vec3::new(0.05, 0.05, 0.05));
+        lighting_shader.set_uniform_3v(String::from("pointLights[1].diffuse"), Vec3::new(0.8, 0.8, 0.8));
+        lighting_shader.set_uniform_3v(String::from("pointLights[1].specular"), Vec3::new(1.0, 1.0, 1.0));
+        lighting_shader.set_float(String::from("pointLights[1].constant"), 1.0);
+        lighting_shader.set_float(String::from("pointLights[1].linear"), 0.09);
+        lighting_shader.set_float(String::from("pointLights[1].quadratic"), 0.032);
+        // point light 3
+        lighting_shader.set_uniform_3v(String::from("pointLights[2].position"), positions_light[2]);
+        lighting_shader.set_uniform_3v(String::from("pointLights[2].ambient"), Vec3::new(0.05, 0.05, 0.05));
+        lighting_shader.set_uniform_3v(String::from("pointLights[2].diffuse"), Vec3::new(0.8, 0.8, 0.8));
+        lighting_shader.set_uniform_3v(String::from("pointLights[2].specular"), Vec3::new(1.0, 1.0, 1.0));
+        lighting_shader.set_float(String::from("pointLights[2].constant"), 1.0);
+        lighting_shader.set_float(String::from("pointLights[2].linear"), 0.09);
+        lighting_shader.set_float(String::from("pointLights[2].quadratic"), 0.032);
+        // point light 4
+        lighting_shader.set_uniform_3v(String::from("pointLights[3].position"), positions_light[3]);
+        lighting_shader.set_uniform_3v(String::from("pointLights[3].ambient"), Vec3::new(0.05, 0.05, 0.05));
+        lighting_shader.set_uniform_3v(String::from("pointLights[3].diffuse"), Vec3::new(0.8, 0.8, 0.8));
+        lighting_shader.set_uniform_3v(String::from("pointLights[3].specular"), Vec3::new(1.0, 1.0, 1.0));
+        lighting_shader.set_float(String::from("pointLights[3].constant"), 1.0);
+        lighting_shader.set_float(String::from("pointLights[3].linear"), 0.09);
+        lighting_shader.set_float(String::from("pointLights[3].quadratic"), 0.032);
+        // spotLight
+        lighting_shader.set_uniform_3v(String::from("spotLight.position"), *camera.get_position());
+        lighting_shader.set_uniform_3v(String::from("spotLight.direction"), *camera.get_front());
+        lighting_shader.set_uniform_3v(String::from("spotLight.ambient"), Vec3::new(0.0, 0.0, 0.0));
+        lighting_shader.set_uniform_3v(String::from("spotLight.diffuse"), Vec3::new(1.0, 1.0, 1.0));
+        lighting_shader.set_uniform_3v(String::from("spotLight.specular"), Vec3::new(1.0, 1.0, 1.0));
+        lighting_shader.set_float(String::from("spotLight.constant"), 1.0);
+        lighting_shader.set_float(String::from("spotLight.linear"), 0.09);
+        lighting_shader.set_float(String::from("spotLight.quadratic"), 0.032);
+        lighting_shader.set_float(String::from("spotLight.cutOff"), 12.5_f32.to_radians().cos());
+        lighting_shader.set_float(String::from("spotLight.outerCutOff"), 15.0_f32.to_radians().cos());
+
+
 
         //view/projection transformation
         let projection_matrix: Mat4 = Mat4::perspective_rh(
@@ -359,16 +393,17 @@ pub fn create_window(window_title: &String, window_width: u32, window_height: u3
             render(&mut lighting_shader, &mut shape);
         }
 
-
-        //and finally render the lamp
         light_cube_shader.apply_shader();
         light_cube_shader.set_uniform_matrix_4(String::from("projection"), projection_matrix);
         light_cube_shader.set_uniform_matrix_4(String::from("view"), view_matrix);
-        let model_matrix =
-            Mat4::IDENTITY * translate(light_pos) * scale(0.2,SCALE_X|SCALE_Y|SCALE_Z);
-        light_cube_shader.set_uniform_matrix_4(String::from("model"), model_matrix);
-        render(&mut light_cube_shader, &mut shape_light);
 
+        for (i, position) in positions_light.iter().enumerate(){
+        //and finally render the lamp
+            let model_matrix =
+                Mat4::IDENTITY * translate(*position) * scale(0.2,SCALE_X|SCALE_Y|SCALE_Z);
+            light_cube_shader.set_uniform_matrix_4(String::from("model"), model_matrix);
+            render(&mut light_cube_shader, &mut shape_light);
+        }
         //////////////////////////
 
         imgui_manager.init_frame(&window, delta_time, &mut editor_state);
