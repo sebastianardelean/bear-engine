@@ -1,12 +1,12 @@
-use crate::draw::{RenderManager,  Shader, Shape, Texture, translate, Camera, PITCH, YAW};
+use crate::draw::CameraMovement::{Backward, Forward, Left, Right};
+use crate::draw::{Camera, DrawMode, PITCH, SCALE_X, SCALE_Y, SCALE_Z, Shader, Shape, Texture, YAW, scale, translate, render_prepare, render, render_bind_texture, rotate, Light};
 use crate::editor::EditorState;
 use crate::window::imgui_manager::imgui_manager_mod;
 use crate::{error_log, trace_log};
 use glam::{Mat4, Vec3};
 use glfw::{Action, Context, Key, WindowEvent};
 use std::os::raw::c_void;
-use std::time::{Duration, Instant};
-use crate::draw::CameraMovement::{Backward, Forward, Left, Right};
+use std::time::Duration;
 
 pub fn create_window(window_title: &String, window_width: u32, window_height: u32) {
     let mut glfw = glfw::init(glfw::fail_on_errors).unwrap_or_else(|e| {
@@ -52,77 +52,132 @@ pub fn create_window(window_title: &String, window_width: u32, window_height: u3
         gl::ClearColor(0.1, 0.12, 0.15, 1.0);
     }
 
-
     trace_log!("Initializing ImGui!");
     let mut imgui_manager = imgui_manager_mod::ImGuiWindow::new(&mut window);
-
 
     let mut editor_state: EditorState = EditorState::new();
 
     //Prepare drawing of the first shape
 
     trace_log!("Preparing the shaders!\n");
-    let mut shader = Shader::new("shaders/camera_vs.glsl", "shaders/camera_fs.glsl")
-        .unwrap_or_else(|err| {
-            error_log!("Error loading shaders:{}", err);
-            panic!("Failed to load shaders");
-        });
+    let mut lighting_shader: Shader = Shader::new(
+        "shaders/lighting/multiple_lights_vs.glsl",
+        "shaders/lighting/multiple_lights_fs.glsl",
+    )
+    .unwrap_or_else(|err| {
+        error_log!("Error loading object shaders:{}", err);
+        panic!("Failed to load object shaders");
+    });
+    let mut light_cube_shader = Shader::new(
+        "shaders/lighting/light_cube_vs.glsl",
+        "shaders/lighting/light_cube_fs.glsl",
+    )
+    .unwrap_or_else(|err| {
+        error_log!("Error loading light shaders:{}", err);
+        panic!("Failed to load light shaders");
+    });
 
-    let _shader_program_id: u32 = shader.build_shader();
+    let _shader: u32 = lighting_shader.build_shader();
+    let _shader: u32 = light_cube_shader.build_shader();
 
     trace_log!("Preparing the camera!\n");
-    let mut camera:Camera = Camera::new(
+    let mut camera: Camera = Camera::new(
         Vec3::from([0.0, 0.0, 3.0]),
         Vec3::from([0.0, 1.0, 0.0]),
         YAW,
-        PITCH
+        PITCH,
     );
 
-    let vertices: [f32; 180] = [
-        -0.5, -0.5, -0.5,  0.0, 0.0,
-        0.5, -0.5, -0.5,  1.0, 0.0,
-        0.5,  0.5, -0.5,  1.0, 1.0,
-        0.5,  0.5, -0.5,  1.0, 1.0,
-        -0.5,  0.5, -0.5,  0.0, 1.0,
-        -0.5, -0.5, -0.5,  0.0, 0.0,
+    let vertices: [f32; 288] = [
+        // positions          // normals           // texture coords
+        -0.5, -0.5, -0.5,  0.0,  0.0, -1.0,  0.0,  0.0,
+        0.5, -0.5, -0.5,  0.0,  0.0, -1.0,  1.0,  0.0,
+        0.5,  0.5, -0.5,  0.0,  0.0, -1.0,  1.0,  1.0,
+        0.5,  0.5, -0.5,  0.0,  0.0, -1.0,  1.0,  1.0,
+        -0.5,  0.5, -0.5,  0.0,  0.0, -1.0,  0.0,  1.0,
+        -0.5, -0.5, -0.5,  0.0,  0.0, -1.0,  0.0,  0.0,
 
-        -0.5, -0.5,  0.5,  0.0, 0.0,
-        0.5, -0.5,  0.5,  1.0, 0.0,
-        0.5,  0.5,  0.5,  1.0, 1.0,
-        0.5,  0.5,  0.5,  1.0, 1.0,
-        -0.5,  0.5,  0.5,  0.0, 1.0,
-        -0.5, -0.5,  0.5,  0.0, 0.0,
+        -0.5, -0.5,  0.5,  0.0,  0.0,  1.0,  0.0,  0.0,
+        0.5, -0.5,  0.5,  0.0,  0.0,  1.0,  1.0,  0.0,
+        0.5,  0.5,  0.5,  0.0,  0.0,  1.0,  1.0,  1.0,
+        0.5,  0.5,  0.5,  0.0,  0.0,  1.0,  1.0,  1.0,
+        -0.5,  0.5,  0.5,  0.0,  0.0,  1.0,  0.0,  1.0,
+        -0.5, -0.5,  0.5,  0.0,  0.0,  1.0,  0.0,  0.0,
 
-        -0.5,  0.5,  0.5,  1.0, 0.0,
-        -0.5,  0.5, -0.5,  1.0, 1.0,
-        -0.5, -0.5, -0.5,  0.0, 1.0,
-        -0.5, -0.5, -0.5,  0.0, 1.0,
-        -0.5, -0.5,  0.5,  0.0, 0.0,
-        -0.5,  0.5,  0.5,  1.0, 0.0,
+        -0.5,  0.5,  0.5, -1.0,  0.0,  0.0,  1.0,  0.0,
+        -0.5,  0.5, -0.5, -1.0,  0.0,  0.0,  1.0,  1.0,
+        -0.5, -0.5, -0.5, -1.0,  0.0,  0.0,  0.0,  1.0,
+        -0.5, -0.5, -0.5, -1.0,  0.0,  0.0,  0.0,  1.0,
+        -0.5, -0.5,  0.5, -1.0,  0.0,  0.0,  0.0,  0.0,
+        -0.5,  0.5,  0.5, -1.0,  0.0,  0.0,  1.0,  0.0,
 
-        0.5,  0.5,  0.5,  1.0, 0.0,
-        0.5,  0.5, -0.5,  1.0, 1.0,
-        0.5, -0.5, -0.5,  0.0, 1.0,
-        0.5, -0.5, -0.5,  0.0, 1.0,
-        0.5, -0.5,  0.5,  0.0, 0.0,
-        0.5,  0.5,  0.5,  1.0, 0.0,
+        0.5,  0.5,  0.5,  1.0,  0.0,  0.0,  1.0,  0.0,
+        0.5,  0.5, -0.5,  1.0,  0.0,  0.0,  1.0,  1.0,
+        0.5, -0.5, -0.5,  1.0,  0.0,  0.0,  0.0,  1.0,
+        0.5, -0.5, -0.5,  1.0,  0.0,  0.0,  0.0,  1.0,
+        0.5, -0.5,  0.5,  1.0,  0.0,  0.0,  0.0,  0.0,
+        0.5,  0.5,  0.5,  1.0,  0.0,  0.0,  1.0,  0.0,
 
-        -0.5, -0.5, -0.5,  0.0, 1.0,
-        0.5, -0.5, -0.5,  1.0, 1.0,
-        0.5, -0.5,  0.5,  1.0, 0.0,
-        0.5, -0.5,  0.5,  1.0, 0.0,
-        -0.5, -0.5,  0.5,  0.0, 0.0,
-        -0.5, -0.5, -0.5,  0.0, 1.0,
+        -0.5, -0.5, -0.5,  0.0, -1.0,  0.0,  0.0,  1.0,
+        0.5, -0.5, -0.5,  0.0, -1.0,  0.0,  1.0,  1.0,
+        0.5, -0.5,  0.5,  0.0, -1.0,  0.0,  1.0,  0.0,
+        0.5, -0.5,  0.5,  0.0, -1.0,  0.0,  1.0,  0.0,
+        -0.5, -0.5,  0.5,  0.0, -1.0,  0.0,  0.0,  0.0,
+        -0.5, -0.5, -0.5,  0.0, -1.0,  0.0,  0.0,  1.0,
 
-        -0.5,  0.5, -0.5,  0.0, 1.0,
-        0.5,  0.5, -0.5,  1.0, 1.0,
-        0.5,  0.5,  0.5,  1.0, 0.0,
-        0.5,  0.5,  0.5,  1.0, 0.0,
-        -0.5,  0.5,  0.5,  0.0, 0.0,
-        -0.5,  0.5, -0.5,  0.0, 1.0
+        -0.5,  0.5, -0.5,  0.0,  1.0,  0.0,  0.0,  1.0,
+        0.5,  0.5, -0.5,  0.0,  1.0,  0.0,  1.0,  1.0,
+        0.5,  0.5,  0.5,  0.0,  1.0,  0.0,  1.0,  0.0,
+        0.5,  0.5,  0.5,  0.0,  1.0,  0.0,  1.0,  0.0,
+        -0.5,  0.5,  0.5,  0.0,  1.0,  0.0,  0.0,  0.0,
+        -0.5,  0.5, -0.5,  0.0,  1.0,  0.0,  0.0,  1.0
     ];
 
-    let cube_positions: [Vec3; 10] = [
+    let vertices_light :[f32;216]=[
+        -0.5, -0.5, -0.5,  0.0,  0.0, -1.0,
+        0.5, -0.5, -0.5,  0.0,  0.0, -1.0,
+        0.5,  0.5, -0.5,  0.0,  0.0, -1.0,
+        0.5,  0.5, -0.5,  0.0,  0.0, -1.0,
+        -0.5,  0.5, -0.5,  0.0,  0.0, -1.0,
+        -0.5, -0.5, -0.5,  0.0,  0.0, -1.0,
+
+        -0.5, -0.5,  0.5,  0.0,  0.0,  1.0,
+        0.5, -0.5,  0.5,  0.0,  0.0,  1.0,
+        0.5,  0.5,  0.5,  0.0,  0.0,  1.0,
+        0.5,  0.5,  0.5,  0.0,  0.0,  1.0,
+        -0.5,  0.5,  0.5,  0.0,  0.0,  1.0,
+        -0.5, -0.5,  0.5,  0.0,  0.0,  1.0,
+
+        -0.5,  0.5,  0.5, -1.0,  0.0,  0.0,
+        -0.5,  0.5, -0.5, -1.0,  0.0,  0.0,
+        -0.5, -0.5, -0.5, -1.0,  0.0,  0.0,
+        -0.5, -0.5, -0.5, -1.0,  0.0,  0.0,
+        -0.5, -0.5,  0.5, -1.0,  0.0,  0.0,
+        -0.5,  0.5,  0.5, -1.0,  0.0,  0.0,
+
+        0.5,  0.5,  0.5,  1.0,  0.0,  0.0,
+        0.5,  0.5, -0.5,  1.0,  0.0,  0.0,
+        0.5, -0.5, -0.5,  1.0,  0.0,  0.0,
+        0.5, -0.5, -0.5,  1.0,  0.0,  0.0,
+        0.5, -0.5,  0.5,  1.0,  0.0,  0.0,
+        0.5,  0.5,  0.5,  1.0,  0.0,  0.0,
+
+        -0.5, -0.5, -0.5,  0.0, -1.0,  0.0,
+        0.5, -0.5, -0.5,  0.0, -1.0,  0.0,
+        0.5, -0.5,  0.5,  0.0, -1.0,  0.0,
+        0.5, -0.5,  0.5,  0.0, -1.0,  0.0,
+        -0.5, -0.5,  0.5,  0.0, -1.0,  0.0,
+        -0.5, -0.5, -0.5,  0.0, -1.0,  0.0,
+
+        -0.5,  0.5, -0.5,  0.0,  1.0,  0.0,
+        0.5,  0.5, -0.5,  0.0,  1.0,  0.0,
+        0.5,  0.5,  0.5,  0.0,  1.0,  0.0,
+        0.5,  0.5,  0.5,  0.0,  1.0,  0.0,
+        -0.5,  0.5,  0.5,  0.0,  1.0,  0.0,
+        -0.5,  0.5, -0.5,  0.0,  1.0,  0.0
+    ];
+
+    let positions:[Vec3;10] = [
         Vec3::new(0.0, 0.0, 0.0),
         Vec3::new(2.0, 5.0, -15.0),
         Vec3::new(-1.5, -2.2, -2.5),
@@ -135,84 +190,95 @@ pub fn create_window(window_title: &String, window_width: u32, window_height: u3
         Vec3::new(-1.3, 1.0, -1.5),
     ];
 
+    let positions_light:[Vec3;4] = [
+        Vec3::new( 0.7,  0.2,  2.0),
+        Vec3::new( 2.3, -3.3, -4.0),
+        Vec3::new(-4.0,  2.0, -12.0),
+        Vec3::new( 0.0,  0.0, -3.0)
+    ];
+
     trace_log!("Preparing GPU Buffers\n");
-    let shape: Shape = Shape::new(Vec::from(vertices), None);
+    let mut shape: Shape = Shape::new(Vec::from(vertices), None, DrawMode::RenderBoth);
+    let mut shape_light: Shape = Shape::new(Vec::from(vertices_light), None, DrawMode::RenderLight);
 
-    trace_log!("Preparing the textures\n");
-    let mut texture_1: Texture = Texture::new(
+    trace_log!("Prepare the texture!");
+    let mut texture: Texture = Texture::new(
         gl::REPEAT as i32,
         gl::REPEAT as i32,
         gl::REPEAT as i32,
+        gl::LINEAR_MIPMAP_LINEAR as i32,
         gl::LINEAR as i32,
-        gl::LINEAR as i32,
-        "textures/container.png",
+        "textures/container2.png",
     )
     .unwrap_or_else(|err| {
         error_log!("Error loading textures:{}", err);
         panic!("Failed to load texture!");
     });
 
-    let mut texture_2: Texture = Texture::new(
+    let mut texture_specular: Texture = Texture::new(
         gl::REPEAT as i32,
         gl::REPEAT as i32,
         gl::REPEAT as i32,
+        gl::LINEAR_MIPMAP_LINEAR as i32,
         gl::LINEAR as i32,
-        gl::LINEAR as i32,
-        "textures/awesomeface.png",
+        "textures/container2_specular.png",
     )
-    .unwrap_or_else(|err| {
-        error_log!("Error loading textures:{}", err);
-        panic!("Failed to load texture!");
-    });
+        .unwrap_or_else(|err| {
+            error_log!("Error loading textures:{}", err);
+            panic!("Failed to load texture!");
+        });
 
-    let id_1 = texture_1.create_texture();
-    let id_2 = texture_2.create_texture();
-
-    let textures: Vec<(u32, &str)> = vec![(id_1, "texture1"), (id_2, "texture2")];
+    let texture_id: u32 = texture.create_texture();
+    let texture_id_specuar:u32 = texture_specular.create_texture();
+    let textures: Vec<(u32, &str)> = vec![(texture_id, "material.diffuse"),
+                                          (texture_id_specuar, "material.specular")];
 
     trace_log!("Preparing the renderer");
 
-    let mut render_manager = RenderManager::new();
-    render_manager.prepare(&mut shader, &textures);
 
-    render_manager.queue_shapes(shape);
+    render_prepare(&mut lighting_shader, &textures);
 
-    let mut last_x:f32 = window_width as f32 / 2.0;
-    let mut last_y:f32 = window_height as f32 / 2.0;
+    let mut last_x: f32 = window_width as f32 / 2.0;
+    let mut last_y: f32 = window_height as f32 / 2.0;
 
-    let mut first_mouse:bool = true;
+    let mut first_mouse: bool = true;
+
+    let mut last_frame: f32 = 0.0;
+
+    let mut light = Light::new(Vec::from(positions_light));
 
 
-
-    let mut last_frame = Instant::now();
-    let mut delta_s: f32 = 0.0;
 
     while !window.should_close() {
         glfw.poll_events();
+
+        let current_frame = glfw.get_time() as f32;
+        let delta_time = current_frame - last_frame;
+        last_frame = current_frame;
 
         for (_, event) in glfw::flush_messages(&events) {
             imgui_manager.handle_event(&event);
 
             match event {
                 WindowEvent::Key(Key::Escape, _, Action::Press, _) => window.set_should_close(true),
-                WindowEvent::Key(Key::W,_,Action::Press,_) =>{
-                    camera.process_keyboard(Forward,delta_s);
-                },
-                WindowEvent::Key(Key::A,_,Action::Press,_) =>{
-                    camera.process_keyboard(Left,delta_s);
-                },
-                WindowEvent::Key(Key::S,_,Action::Press,_) =>{
-                    camera.process_keyboard(Backward,delta_s);
-                },
-                WindowEvent::Key(Key::D,_,Action::Press,_) => {
-                    camera.process_keyboard(Right,delta_s);
-                },
+                WindowEvent::Key(Key::W, _, Action::Press| Action::Repeat, _) => {
+                    camera.process_keyboard(Forward, delta_time);
+                }
+                WindowEvent::Key(Key::A, _, Action::Press | Action::Repeat, _) => {
+                    camera.process_keyboard(Left, delta_time);
+                }
+                WindowEvent::Key(Key::S, _, Action::Press| Action::Repeat, _) => {
+                    camera.process_keyboard(Backward, delta_time);
+                }
+                WindowEvent::Key(Key::D, _, Action::Press| Action::Repeat, _) => {
+                    camera.process_keyboard(Right, delta_time);
+                }
                 WindowEvent::FramebufferSize(w, h) => unsafe {
                     gl::Viewport(0, 0, w, h);
                 },
-                WindowEvent::CursorPos(x,y) =>{
+                WindowEvent::CursorPos(x, y) => {
                     //handle mouse
-                    let x_pos :f32 = x as f32;
+                    let x_pos: f32 = x as f32;
                     let y_pos: f32 = y as f32;
                     if first_mouse {
                         last_x = x_pos;
@@ -220,16 +286,16 @@ pub fn create_window(window_title: &String, window_width: u32, window_height: u3
                         first_mouse = false;
                     }
 
-                    let x_offset:f32 = x_pos -last_x;
-                    let y_offset:f32 = last_y - y_pos;
+                    let x_offset: f32 = x_pos - last_x;
+                    let y_offset: f32 = last_y - y_pos;
                     last_x = x_pos;
                     last_y = y_pos;
-                    camera.process_mouse(x_offset,y_offset,true);
-                },
-                WindowEvent::Scroll(_x_offset,y_offset)=>{
-                   //handle scroll on y offset
+                    camera.process_mouse(x_offset, y_offset, true);
+                }
+                WindowEvent::Scroll(_x_offset, y_offset) => {
+                    //handle scroll on y offset
                     camera.process_mouse_scroll(y_offset as f32);
-                },
+                }
 
                 _ => {}
             }
@@ -237,45 +303,65 @@ pub fn create_window(window_title: &String, window_width: u32, window_height: u3
 
         // // The rest of the game loop goes here...
         unsafe {
-            gl::ClearColor(0.1, 0.12, 0.15, 1.0);
+            gl::ClearColor(0.1, 0.1, 0.1, 1.0);
             gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
         }
 
-        render_manager.apply_texture(&textures);
+        lighting_shader.apply_shader();
+        lighting_shader.set_uniform_3v(String::from("viewPos"),*camera.get_position());
+        lighting_shader.set_float(String::from("material.shininess"), 32.0);
 
-        let view_matrix:Mat4 = camera.view_matrix();
-        let projection_matrix:Mat4 = Mat4::perspective_rh(
+
+        light.apply_directional_light(&mut lighting_shader);
+        light.apply_default_light_properties(&mut lighting_shader, &mut camera);
+        light.apply_spotlight(&mut lighting_shader, &mut camera);
+
+        //view/projection transformation
+        let projection_matrix: Mat4 = Mat4::perspective_rh(
             camera.get_zoom().to_radians(),
             window_width as f32 / window_height as f32,
             0.1,
             100.0,
         );
+        let view_matrix: Mat4 = camera.view_matrix();
+
+        lighting_shader.set_uniform_matrix_4(String::from("projection"), projection_matrix);
+        lighting_shader.set_uniform_matrix_4(String::from("view"), view_matrix);
+        lighting_shader.set_uniform_matrix_4(String::from("model"), Mat4::IDENTITY);
+
+        // render the texture
+        render_bind_texture(&textures);
+
+        //render the cube
+//render(&mut lighting_shader, &mut shape);
 
 
 
-        shader.set_uniform_matrix_4(String::from("projection"), projection_matrix);
-        shader.set_uniform_matrix_4(String::from("view"), view_matrix);
+        for (i,position) in positions.iter().enumerate() {
+            lighting_shader.apply_shader();
 
-        for (i, position) in cube_positions.iter().enumerate() {
-            let mut model = Mat4::IDENTITY;
-            model = model * translate(*position);
-            let angle: f32 = 20.0 * i as f32;
-            let axis = Vec3::new(1.0, 0.3, 0.5).normalize();
-            let rotation = Mat4::from_axis_angle(axis, angle.to_radians());
-            model = model * rotation;
+            let angle:f32 = 20.0 * i as f32;
+            let model_matrix =
+                Mat4::IDENTITY * translate(*position) * rotate(angle, Vec3::new(1.0, 0.3, 0.5));
+            lighting_shader.set_uniform_matrix_4(String::from("model"), model_matrix);
 
-            shader.set_uniform_matrix_4(String::from("model"), model);
-            render_manager.draw(&mut shader);
+            render(&mut lighting_shader, &mut shape);
         }
 
+        light_cube_shader.apply_shader();
+        light_cube_shader.set_uniform_matrix_4(String::from("projection"), projection_matrix);
+        light_cube_shader.set_uniform_matrix_4(String::from("view"), view_matrix);
+
+        for (i, position) in positions_light.iter().enumerate(){
+        //and finally render the lamp
+            let model_matrix =
+                Mat4::IDENTITY * translate(*position) * scale(0.2,SCALE_X|SCALE_Y|SCALE_Z);
+            light_cube_shader.set_uniform_matrix_4(String::from("model"), model_matrix);
+            render(&mut light_cube_shader, &mut shape_light);
+        }
         //////////////////////////
-        let now = Instant::now();
-        let delta = now - last_frame;
-        delta_s = delta.as_secs() as f32 + delta.subsec_nanos() as f32 / 1_000_000_000.0;
-        last_frame = now;
 
-
-        imgui_manager.init_frame(&window, delta_s, &mut editor_state);
+        imgui_manager.init_frame(&window, delta_time, &mut editor_state);
 
         window.swap_buffers();
 
