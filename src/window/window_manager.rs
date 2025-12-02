@@ -1,8 +1,5 @@
 use crate::draw::CameraMovement::{Backward, Forward, Left, Right};
-use crate::draw::{
-    Camera, DrawMode, PITCH, RenderManager, SCALE_X, SCALE_Y, SCALE_Z, Shader, Shape, Texture, YAW,
-    scale, translate,
-};
+use crate::draw::{Camera, DrawMode, PITCH, RenderManager, SCALE_X, SCALE_Y, SCALE_Z, Shader, Shape, Texture, YAW, scale, translate, render_prepare, render, render_bind_texture};
 use crate::editor::EditorState;
 use crate::window::imgui_manager::imgui_manager_mod;
 use crate::{error_log, trace_log};
@@ -218,8 +215,8 @@ pub fn create_window(window_title: &String, window_width: u32, window_height: u3
 
     trace_log!("Preparing the renderer");
 
-    let mut render_manager = RenderManager::new();
-    render_manager.prepare(&mut lighting_shader, &textures);
+
+    render_prepare(&mut lighting_shader, &textures);
 
     let mut last_x: f32 = window_width as f32 / 2.0;
     let mut last_y: f32 = window_height as f32 / 2.0;
@@ -325,10 +322,10 @@ pub fn create_window(window_title: &String, window_width: u32, window_height: u3
         lighting_shader.set_uniform_matrix_4(String::from("model"), Mat4::IDENTITY);
 
         // render the texture
-        render_manager.apply_textures(&textures);
+        render_bind_texture(&textures);
 
         //render the cube
-        render_manager.draw(&mut lighting_shader, &mut shape);
+        render(&mut lighting_shader, &mut shape);
 
         //and finally render the lamp
 
@@ -340,7 +337,7 @@ pub fn create_window(window_title: &String, window_width: u32, window_height: u3
             Mat4::IDENTITY * translate(light_pos) * scale(0.2, SCALE_X | SCALE_Y | SCALE_Z);
         light_cube_shader.set_uniform_matrix_4(String::from("model"), model_matrix);
 
-        render_manager.draw(&mut light_cube_shader, &mut shape_light);
+        render(&mut light_cube_shader, &mut shape_light);
 
         //////////////////////////
 
