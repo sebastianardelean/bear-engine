@@ -1,5 +1,5 @@
 use crate::draw::CameraMovement::{Backward, Forward, Left, Right};
-use crate::draw::{Camera, DrawMode, PITCH, RenderManager, SCALE_X, SCALE_Y, SCALE_Z, Shader, Shape, Texture, YAW, scale, translate, render_prepare, render, render_bind_texture};
+use crate::draw::{Camera, DrawMode, PITCH, SCALE_X, SCALE_Y, SCALE_Z, Shader, Shape, Texture, YAW, scale, translate, render_prepare, render, render_bind_texture, rotate};
 use crate::editor::EditorState;
 use crate::window::imgui_manager::imgui_manager_mod;
 use crate::{error_log, trace_log};
@@ -61,8 +61,8 @@ pub fn create_window(window_title: &String, window_width: u32, window_height: u3
 
     trace_log!("Preparing the shaders!\n");
     let mut lighting_shader: Shader = Shader::new(
-        "shaders/lighting/lighting_maps_vs.glsl",
-        "shaders/lighting/lighting_maps_fs.glsl",
+        "shaders/lighting/light_caster_vs.glsl",
+        "shaders/lighting/light_caster_fs.glsl",
     )
     .unwrap_or_else(|err| {
         error_log!("Error loading object shaders:{}", err);
@@ -177,6 +177,19 @@ pub fn create_window(window_title: &String, window_width: u32, window_height: u3
         -0.5,  0.5, -0.5,  0.0,  1.0,  0.0
     ];
 
+    let positions:[Vec3;10] = [
+        Vec3::new(0.0, 0.0, 0.0),
+        Vec3::new(2.0, 5.0, -15.0),
+        Vec3::new(-1.5, -2.2, -2.5),
+        Vec3::new(-3.8, -2.0, -12.3),
+        Vec3::new(2.4, -0.4, -3.5),
+        Vec3::new(-1.7, 3.0, -7.5),
+        Vec3::new(1.3, -2.0, -2.5),
+        Vec3::new(1.5, 2.0, -2.5),
+        Vec3::new(1.5, 0.2, -1.5),
+        Vec3::new(-1.3, 1.0, -1.5),
+    ];
+
     trace_log!("Preparing GPU Buffers\n");
     let mut shape: Shape = Shape::new(Vec::from(vertices), None, DrawMode::RenderBoth);
     let mut shape_light: Shape = Shape::new(Vec::from(vertices_light), None, DrawMode::RenderLight);
@@ -281,14 +294,17 @@ pub fn create_window(window_title: &String, window_width: u32, window_height: u3
 
         // // The rest of the game loop goes here...
         unsafe {
-            gl::ClearColor(0.1, 0.12, 0.15, 1.0);
+            gl::ClearColor(0.1, 0.1, 0.1, 1.0);
             gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
         }
 
         //activate shader for setting uniforms/drawing objects
         lighting_shader.apply_shader();
-        lighting_shader.set_uniform_3v(String::from("light.position"), light_pos);
-        lighting_shader.set_uniform_3v(String::from("viewPos"), *camera.get_position());
+        lighting_shader.set_uniform_3v(String::from("light.position"), *camera.get_position());
+        lighting_shader.set_uniform_3v(String::from("light.direction"), *camera.get_front());
+        lighting_shader.set_float(String::from("light.cutOff"),12.5_f32.to_radians().cos());
+        (lighting_shader).set_float(String::from("light.outerCutOff"),17.5_f32.to_radians().sin());
+        lighting_shader.set_uniform_3v(String::from("viewPos"),*camera.get_position());
 
         //light properties
         // let light_color:Vec3=Vec3::new(
@@ -300,13 +316,16 @@ pub fn create_window(window_title: &String, window_width: u32, window_height: u3
         // let diffuse_color:Vec3 = light_color*Vec3::new(0.5,0.5,0.5);
         // let ambient_color:Vec3 = diffuse_color*Vec3::new(0.2,0.2,0.2);
 
-        lighting_shader.set_uniform_3v(String::from("light.ambient"), Vec3::new(0.2, 0.2, 0.2));
-        lighting_shader.set_uniform_3v(String::from("light.diffuse"), Vec3::new(0.5, 0.5, 0.5));
+        lighting_shader.set_uniform_3v(String::from("light.ambient"), Vec3::new(0.1, 0.1, 0.1));
+        lighting_shader.set_uniform_3v(String::from("light.diffuse"), Vec3::new(0.8, 0.8, 0.8));
         lighting_shader.set_uniform_3v(String::from("light.specular"), Vec3::new(1.0, 1.0, 1.0));
+        lighting_shader.set_float(String::from("light.constant"), 1.0);
+        lighting_shader.set_float(String::from("light.linear"), 0.09);
+        lighting_shader.set_float(String::from("light.quadratic"), 0.032);
 
         //material properties
-        lighting_shader.set_uniform_3v(String::from("material.specular"), Vec3::new(0.5, 0.5, 0.5));
-        lighting_shader.set_float(String::from("material.shininess"), 64.0);
+        //lighting_shader.set_uniform_3v(String::from("material.specular"), Vec3::new(0.5, 0.5, 0.5));
+        lighting_shader.set_float(String::from("material.shininess"), 32.0);
 
         //view/projection transformation
         let projection_matrix: Mat4 = Mat4::perspective_rh(
@@ -325,18 +344,29 @@ pub fn create_window(window_title: &String, window_width: u32, window_height: u3
         render_bind_texture(&textures);
 
         //render the cube
-        render(&mut lighting_shader, &mut shape);
+//render(&mut lighting_shader, &mut shape);
+
+
+
+        for (i,position) in positions.iter().enumerate() {
+            lighting_shader.apply_shader();
+
+            let angle:f32 = 20.0 * i as f32;
+            let model_matrix =
+                Mat4::IDENTITY * translate(*position) * rotate(angle, Vec3::new(1.0, 0.3, 0.5));
+            lighting_shader.set_uniform_matrix_4(String::from("model"), model_matrix);
+
+            render(&mut lighting_shader, &mut shape);
+        }
+
 
         //and finally render the lamp
-
         light_cube_shader.apply_shader();
         light_cube_shader.set_uniform_matrix_4(String::from("projection"), projection_matrix);
         light_cube_shader.set_uniform_matrix_4(String::from("view"), view_matrix);
-
         let model_matrix =
-            Mat4::IDENTITY * translate(light_pos) * scale(0.2, SCALE_X | SCALE_Y | SCALE_Z);
+            Mat4::IDENTITY * translate(light_pos) * scale(0.2,SCALE_X|SCALE_Y|SCALE_Z);
         light_cube_shader.set_uniform_matrix_4(String::from("model"), model_matrix);
-
         render(&mut light_cube_shader, &mut shape_light);
 
         //////////////////////////
