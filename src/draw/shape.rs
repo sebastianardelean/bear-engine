@@ -176,8 +176,8 @@ impl Shape {
         } else {
             unsafe {
                 gl::BindVertexArray(vao);
-                gl::DrawArrays(gl::TRIANGLES, 0, 36);
-                //gl::DrawArrays(gl::TRIANGLES, 0, self.number_of_triangles);
+                //gl::DrawArrays(gl::TRIANGLES, 0, 36);
+                gl::DrawArrays(gl::TRIANGLES, 0, self.number_of_triangles);
             }
         }
     }

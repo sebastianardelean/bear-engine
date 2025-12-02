@@ -252,16 +252,16 @@ pub fn create_window(window_title: &String, window_width: u32, window_height: u3
 
             match event {
                 WindowEvent::Key(Key::Escape, _, Action::Press, _) => window.set_should_close(true),
-                WindowEvent::Key(Key::W, _, Action::Press, _) => {
+                WindowEvent::Key(Key::W, _, Action::Press| Action::Repeat, _) => {
                     camera.process_keyboard(Forward, delta_time);
                 }
-                WindowEvent::Key(Key::A, _, Action::Press, _) => {
+                WindowEvent::Key(Key::A, _, Action::Press | Action::Repeat, _) => {
                     camera.process_keyboard(Left, delta_time);
                 }
-                WindowEvent::Key(Key::S, _, Action::Press, _) => {
+                WindowEvent::Key(Key::S, _, Action::Press| Action::Repeat, _) => {
                     camera.process_keyboard(Backward, delta_time);
                 }
-                WindowEvent::Key(Key::D, _, Action::Press, _) => {
+                WindowEvent::Key(Key::D, _, Action::Press| Action::Repeatsssssssssssss, _) => {
                     camera.process_keyboard(Right, delta_time);
                 }
                 WindowEvent::FramebufferSize(w, h) => unsafe {
