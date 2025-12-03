@@ -5,6 +5,9 @@ mod textures;
 mod transformations;
 mod camera;
 mod light;
+mod mesh;
+mod vertex;
+mod model;
 
 pub use render::*;
 pub use shaders::Shader;

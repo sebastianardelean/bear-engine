@@ -209,6 +209,7 @@ pub fn create_window(window_title: &String, window_width: u32, window_height: u3
         gl::LINEAR_MIPMAP_LINEAR as i32,
         gl::LINEAR as i32,
         "textures/container2.png",
+        ""
     )
     .unwrap_or_else(|err| {
         error_log!("Error loading textures:{}", err);
@@ -222,6 +223,7 @@ pub fn create_window(window_title: &String, window_width: u32, window_height: u3
         gl::LINEAR_MIPMAP_LINEAR as i32,
         gl::LINEAR as i32,
         "textures/container2_specular.png",
+        ""
     )
         .unwrap_or_else(|err| {
             error_log!("Error loading textures:{}", err);

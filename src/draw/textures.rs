@@ -4,8 +4,11 @@ use image::ImageReader;
 use std::io;
 use std::path::Path;
 
+
 pub struct Texture {
+    texture_id: u32,
     texture_file: String,
+    texture_type: String,
     texture_wrap_s: i32,
     texture_wrap_t: i32,
     #[allow(unused)]
@@ -22,6 +25,7 @@ impl Texture {
         texture_filter_min: i32,
         texture_filter_mag: i32,
         texture_file_path: &str,
+        texture_type:&str,
     ) -> io::Result<Texture> {
         if !check_if_file_exists(Path::new(texture_file_path))? {
             error_log!("{} does not exist", texture_file_path);
@@ -32,13 +36,23 @@ impl Texture {
         }
 
         return Ok(Texture {
+            texture_id: 0,
             texture_file: texture_file_path.to_string(),
+            texture_type: texture_type.to_string(),
             texture_wrap_s: texture_wrap_s,
             texture_wrap_t: texture_wrap_t,
             texture_wrap_r: texture_wrap_r,
             texture_filter_min: texture_filter_min,
             texture_filter_mag: texture_filter_mag,
         });
+    }
+
+    pub fn get_texture_type(&self) -> &str {
+        return &self.texture_type;
+    }
+
+    pub fn get_texture_id(&self) -> u32 {
+        return self.texture_id;
     }
 
     pub fn create_texture(&mut self) -> u32 {
@@ -89,6 +103,7 @@ impl Texture {
             );
             gl::GenerateMipmap(gl::TEXTURE_2D);
         }
+        self.texture_id = id;
         return id;
     }
 }
@@ -100,3 +115,5 @@ pub fn bind_texture(id: u32, texture_offset: u32) {
         gl::BindTexture(gl::TEXTURE_2D, id);
     }
 }
+
+

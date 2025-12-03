@@ -10,6 +10,7 @@ home = "0.5.11"
 asset-importer = { version = "0.4", features = ["build-assimp"] }
 cmake = "0.1.54"
 
+
 glfw = "0.60.0"
 gl = "0.10.0"
 glam = "0.30.9"
