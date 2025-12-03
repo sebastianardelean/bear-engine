@@ -8,7 +8,7 @@ log = {version = "0.4.27", optional = true}
 log4rs = {version = "1.4.0-rc2", optional = true}
 home = "0.5.11"
 asset-importer = { version = "0.4", features = ["build-assimp"] }
-
+cmake = "0.1.54"
 
 glfw = "0.60.0"
 gl = "0.10.0"
@@ -23,3 +23,5 @@ image = "0.25.9"
 default = ["logging"]
 logging = ["log", "log4rs"]
 
+[build-dependencies]
+cmake = "0.1.54"
