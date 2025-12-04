@@ -3,27 +3,23 @@ use crate::{error_log, trace_log};
 use image::ImageReader;
 use std::io;
 use std::path::Path;
+use gl::types::GLint;
 
-
+#[derive(Clone)]
 pub struct Texture {
     texture_id: u32,
     texture_file: String,
-    texture_type: String,
-    texture_wrap_s: i32,
-    texture_wrap_t: i32,
-    #[allow(unused)]
-    texture_wrap_r: i32,
-    texture_filter_min: i32,
-    texture_filter_mag: i32,
+    texture_type: String
+}
+
+impl Texture {
+    pub(crate) fn clone(&self) -> Texture {
+        todo!()
+    }
 }
 
 impl Texture {
     pub fn new(
-        texture_wrap_s: i32,
-        texture_wrap_t: i32,
-        texture_wrap_r: i32,
-        texture_filter_min: i32,
-        texture_filter_mag: i32,
         texture_file_path: &str,
         texture_type:&str,
     ) -> io::Result<Texture> {
@@ -39,11 +35,6 @@ impl Texture {
             texture_id: 0,
             texture_file: texture_file_path.to_string(),
             texture_type: texture_type.to_string(),
-            texture_wrap_s: texture_wrap_s,
-            texture_wrap_t: texture_wrap_t,
-            texture_wrap_r: texture_wrap_r,
-            texture_filter_min: texture_filter_min,
-            texture_filter_mag: texture_filter_mag,
         });
     }
 
@@ -55,25 +46,29 @@ impl Texture {
         return self.texture_id;
     }
 
+    pub fn get_texture_file(&self) -> &str {
+        return &self.texture_file;
+    }
+
     pub fn create_texture(&mut self) -> u32 {
         let mut id: u32 = 0;
         unsafe {
             gl::GenTextures(1, &mut id);
             gl::BindTexture(gl::TEXTURE_2D, id);
             // set texture wrapping parameters
-            gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_S, self.texture_wrap_s);
-            gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_T, self.texture_wrap_t);
+            gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_S, gl::REPEAT as GLint);
+            gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_T, gl::REPEAT as GLint);
 
             // set texture filtering parameters
             gl::TexParameteri(
                 gl::TEXTURE_2D,
                 gl::TEXTURE_MIN_FILTER,
-                self.texture_filter_min,
+                gl::LINEAR_MIPMAP_LINEAR as GLint,
             );
             gl::TexParameteri(
                 gl::TEXTURE_2D,
                 gl::TEXTURE_MAG_FILTER,
-                self.texture_filter_mag,
+                gl::LINEAR as GLint,
             );
         }
 

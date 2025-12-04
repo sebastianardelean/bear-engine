@@ -5,16 +5,16 @@ use std::mem::offset_of;
 use std::os::raw::c_void;
 use std::sync::OnceLock;
 
-pub struct Mesh {
+pub struct MeshObject {
     vertices: Vec<Vertex>,
     indices: Vec<u32>,
     texture: Vec<Texture>,
     gpu_buffers: OnceLock<(u32, u32, u32)>,
 }
 
-impl Mesh {
-    pub fn new(vertices: Vec<Vertex>, indices: Vec<u32>, texture: Vec<Texture>) -> Mesh {
-        return Mesh {
+impl MeshObject {
+    pub fn new(vertices: Vec<Vertex>, indices: Vec<u32>, texture: Vec<Texture>) -> MeshObject {
+        return MeshObject {
             vertices: vertices,
             indices: indices,
             texture: texture,
