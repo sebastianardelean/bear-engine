@@ -1,6 +1,6 @@
-mod render;
+
 mod shaders;
-mod shape;
+
 mod textures;
 mod transformations;
 mod camera;
@@ -9,10 +9,13 @@ mod mesh;
 mod vertex;
 mod model;
 
-pub use render::*;
+
 pub use shaders::Shader;
-pub use shape::{Shape,DrawMode};
-pub use textures::{Texture, bind_texture};
+
+pub use textures::{Texture};
 pub use transformations::*;
 pub use camera::*;
 pub use light::*;
+pub use mesh::*;
+pub use vertex::*;
+pub use model::*;

@@ -23,16 +23,21 @@ fn main() {
         .define("BUILD_SHARED_LIBS", "OFF")
         .define("CMAKE_CXX_FLAGS", "/EHsc /wd4530") // Enable exceptions, disable this warning
         .define("ASSIMP_WARNINGS_AS_ERRORS", "OFF") // Assimp-specific
+        .define("CMAKE_MSVC_RUNTIME_LIBRARY", "MultiThreadedDLL")
         .define("BUILD_SHARED_LIBS", "OFF")
+        .define("ASSIMP_BUILD_TESTS", "OFF")
+        .define("ASSIMP_BUILD_SAMPLES", "OFF")
         .profile(&profile)
         .build();
 
     // 3. Tell cargo where the library is
     println!("cargo:rustc-link-search=native={}", dst.join("lib").display());
-    // Debug vs Release
-    if cfg!(debug_assertions) {
-        println!("cargo:rustc-link-lib=assimp-vc143-mtd");
-    } else {
-        println!("cargo:rustc-link-lib=assimp-vc143-mt");
-    }
+
+    println!("cargo:rustc-link-lib=assimp-vc143-mt");
+    // // Debug vs Release
+    // if cfg!(debug_assertions) {
+    //     println!("cargo:rustc-link-lib=assimp-vc143-mtd");
+    // } else {
+    //     println!("cargo:rustc-link-lib=assimp-vc143-mt");
+    // }
 }

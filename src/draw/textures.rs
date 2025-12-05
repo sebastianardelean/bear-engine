@@ -1,30 +1,28 @@
 use crate::utils::check_if_file_exists;
 use crate::{error_log, trace_log};
-use image::ImageReader;
+use image::{DynamicImage, GenericImageView, ImageReader};
 use std::io;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use gl::types::GLint;
 
 #[derive(Clone)]
 pub struct Texture {
     texture_id: u32,
     texture_file: String,
+    texture_path:String,
     texture_type: String
 }
 
-impl Texture {
-    pub(crate) fn clone(&self) -> Texture {
-        todo!()
-    }
-}
 
 impl Texture {
     pub fn new(
-        texture_file_path: &str,
+        texture_file: &str,
         texture_type:&str,
+        texture_path:&str,
     ) -> io::Result<Texture> {
-        if !check_if_file_exists(Path::new(texture_file_path))? {
-            error_log!("{} does not exist", texture_file_path);
+        let texture_file_path:PathBuf =[texture_path,texture_file].iter().collect();
+        if !check_if_file_exists(texture_file_path.as_path())? {
+            error_log!("{} does not exist", texture_file_path.as_path().display());
             return Err(io::Error::new(
                 io::ErrorKind::NotFound,
                 "Texture file not found",
@@ -33,8 +31,9 @@ impl Texture {
 
         return Ok(Texture {
             texture_id: 0,
-            texture_file: texture_file_path.to_string(),
+            texture_file: texture_file.to_string(),
             texture_type: texture_type.to_string(),
+            texture_path: texture_file_path.as_path().to_string_lossy().to_string(),
         });
     }
 
@@ -74,27 +73,35 @@ impl Texture {
 
         // load image, create texture and generate mipmaps
 
-        let img = ImageReader::open(self.texture_file.clone())
-            .unwrap()
-            .decode()
-            .unwrap()
-            .flipv()
-            .to_rgba8();
-
+        let img = image::open(self.texture_path.clone()).unwrap_or_else(|e|{
+           error_log!("Error opening texture: {}", e);
+            panic!("Error opening texture: {}", e);
+        }).flipv();
         let (w, h) = img.dimensions();
-        let data_ptr = img.as_ptr();
+        
+        let (format, data_ptr) = match img {
+            DynamicImage::ImageLuma8(img) => (gl::RED, img.into_raw()),
+            DynamicImage::ImageRgb8(img)  => (gl::RGB, img.into_raw()),
+            DynamicImage::ImageRgba8(img) => (gl::RGBA, img.into_raw()),
+            // force conversion if needed
+            _ => {
+                let rgba = img.to_rgba8();
+                (gl::RGBA, rgba.into_raw())
+            }
+        };
+
 
         unsafe {
             gl::TexImage2D(
                 gl::TEXTURE_2D,
                 0,
-                gl::RGBA as i32,
+                format as GLint,
                 w as i32,
                 h as i32,
                 0,
-                gl::RGBA,
+                format,
                 gl::UNSIGNED_BYTE,
-                data_ptr as *const std::ffi::c_void,
+                data_ptr.as_ptr() as *const std::ffi::c_void,
             );
             gl::GenerateMipmap(gl::TEXTURE_2D);
         }
@@ -103,12 +110,6 @@ impl Texture {
     }
 }
 
-pub fn bind_texture(id: u32, texture_offset: u32) {
-    trace_log!("Binding texture {} with offset {}", id, texture_offset);
-    unsafe {
-        gl::ActiveTexture(gl::TEXTURE0 + texture_offset);
-        gl::BindTexture(gl::TEXTURE_2D, id);
-    }
-}
+
 
 

@@ -1,5 +1,5 @@
 use crate::draw::CameraMovement::{Backward, Forward, Left, Right};
-use crate::draw::{Camera, DrawMode, PITCH, SCALE_X, SCALE_Y, SCALE_Z, Shader, Shape, Texture, YAW, scale, translate, render_prepare, render, render_bind_texture, rotate, Light};
+use crate::draw::{Camera,  PITCH, SCALE_X, SCALE_Y, SCALE_Z, Shader,  Texture, YAW, scale, translate, rotate, Light, Model};
 use crate::editor::EditorState;
 use crate::window::imgui_manager::imgui_manager_mod;
 use crate::{error_log, trace_log};
@@ -60,25 +60,22 @@ pub fn create_window(window_title: &String, window_width: u32, window_height: u3
     //Prepare drawing of the first shape
 
     trace_log!("Preparing the shaders!\n");
-    let mut lighting_shader: Shader = Shader::new(
-        "shaders/lighting/multiple_lights_vs.glsl",
-        "shaders/lighting/multiple_lights_fs.glsl",
-    )
-    .unwrap_or_else(|err| {
+    let mut shader:Shader = Shader::new(
+        "shaders/model/model_vs.glsl",
+        "shaders/model/model_fs.glsl"
+    ).unwrap_or_else(|err| {
         error_log!("Error loading object shaders:{}", err);
         panic!("Failed to load object shaders");
     });
-    let mut light_cube_shader = Shader::new(
-        "shaders/lighting/light_cube_vs.glsl",
-        "shaders/lighting/light_cube_fs.glsl",
-    )
-    .unwrap_or_else(|err| {
-        error_log!("Error loading light shaders:{}", err);
-        panic!("Failed to load light shaders");
-    });
 
-    let _shader: u32 = lighting_shader.build_shader();
-    let _shader: u32 = light_cube_shader.build_shader();
+    let _shader:u32 =shader.build_shader();
+
+    trace_log!("Preparing the model!\n");
+    let mut model:Model = Model::new(
+      "resources/backpack/backpack.obj", false
+    );
+    model.load_model();
+
 
     trace_log!("Preparing the camera!\n");
     let mut camera: Camera = Camera::new(
@@ -88,157 +85,12 @@ pub fn create_window(window_title: &String, window_width: u32, window_height: u3
         PITCH,
     );
 
-    let vertices: [f32; 288] = [
-        // positions          // normals           // texture coords
-        -0.5, -0.5, -0.5,  0.0,  0.0, -1.0,  0.0,  0.0,
-        0.5, -0.5, -0.5,  0.0,  0.0, -1.0,  1.0,  0.0,
-        0.5,  0.5, -0.5,  0.0,  0.0, -1.0,  1.0,  1.0,
-        0.5,  0.5, -0.5,  0.0,  0.0, -1.0,  1.0,  1.0,
-        -0.5,  0.5, -0.5,  0.0,  0.0, -1.0,  0.0,  1.0,
-        -0.5, -0.5, -0.5,  0.0,  0.0, -1.0,  0.0,  0.0,
 
-        -0.5, -0.5,  0.5,  0.0,  0.0,  1.0,  0.0,  0.0,
-        0.5, -0.5,  0.5,  0.0,  0.0,  1.0,  1.0,  0.0,
-        0.5,  0.5,  0.5,  0.0,  0.0,  1.0,  1.0,  1.0,
-        0.5,  0.5,  0.5,  0.0,  0.0,  1.0,  1.0,  1.0,
-        -0.5,  0.5,  0.5,  0.0,  0.0,  1.0,  0.0,  1.0,
-        -0.5, -0.5,  0.5,  0.0,  0.0,  1.0,  0.0,  0.0,
 
-        -0.5,  0.5,  0.5, -1.0,  0.0,  0.0,  1.0,  0.0,
-        -0.5,  0.5, -0.5, -1.0,  0.0,  0.0,  1.0,  1.0,
-        -0.5, -0.5, -0.5, -1.0,  0.0,  0.0,  0.0,  1.0,
-        -0.5, -0.5, -0.5, -1.0,  0.0,  0.0,  0.0,  1.0,
-        -0.5, -0.5,  0.5, -1.0,  0.0,  0.0,  0.0,  0.0,
-        -0.5,  0.5,  0.5, -1.0,  0.0,  0.0,  1.0,  0.0,
 
-        0.5,  0.5,  0.5,  1.0,  0.0,  0.0,  1.0,  0.0,
-        0.5,  0.5, -0.5,  1.0,  0.0,  0.0,  1.0,  1.0,
-        0.5, -0.5, -0.5,  1.0,  0.0,  0.0,  0.0,  1.0,
-        0.5, -0.5, -0.5,  1.0,  0.0,  0.0,  0.0,  1.0,
-        0.5, -0.5,  0.5,  1.0,  0.0,  0.0,  0.0,  0.0,
-        0.5,  0.5,  0.5,  1.0,  0.0,  0.0,  1.0,  0.0,
-
-        -0.5, -0.5, -0.5,  0.0, -1.0,  0.0,  0.0,  1.0,
-        0.5, -0.5, -0.5,  0.0, -1.0,  0.0,  1.0,  1.0,
-        0.5, -0.5,  0.5,  0.0, -1.0,  0.0,  1.0,  0.0,
-        0.5, -0.5,  0.5,  0.0, -1.0,  0.0,  1.0,  0.0,
-        -0.5, -0.5,  0.5,  0.0, -1.0,  0.0,  0.0,  0.0,
-        -0.5, -0.5, -0.5,  0.0, -1.0,  0.0,  0.0,  1.0,
-
-        -0.5,  0.5, -0.5,  0.0,  1.0,  0.0,  0.0,  1.0,
-        0.5,  0.5, -0.5,  0.0,  1.0,  0.0,  1.0,  1.0,
-        0.5,  0.5,  0.5,  0.0,  1.0,  0.0,  1.0,  0.0,
-        0.5,  0.5,  0.5,  0.0,  1.0,  0.0,  1.0,  0.0,
-        -0.5,  0.5,  0.5,  0.0,  1.0,  0.0,  0.0,  0.0,
-        -0.5,  0.5, -0.5,  0.0,  1.0,  0.0,  0.0,  1.0
-    ];
-
-    let vertices_light :[f32;216]=[
-        -0.5, -0.5, -0.5,  0.0,  0.0, -1.0,
-        0.5, -0.5, -0.5,  0.0,  0.0, -1.0,
-        0.5,  0.5, -0.5,  0.0,  0.0, -1.0,
-        0.5,  0.5, -0.5,  0.0,  0.0, -1.0,
-        -0.5,  0.5, -0.5,  0.0,  0.0, -1.0,
-        -0.5, -0.5, -0.5,  0.0,  0.0, -1.0,
-
-        -0.5, -0.5,  0.5,  0.0,  0.0,  1.0,
-        0.5, -0.5,  0.5,  0.0,  0.0,  1.0,
-        0.5,  0.5,  0.5,  0.0,  0.0,  1.0,
-        0.5,  0.5,  0.5,  0.0,  0.0,  1.0,
-        -0.5,  0.5,  0.5,  0.0,  0.0,  1.0,
-        -0.5, -0.5,  0.5,  0.0,  0.0,  1.0,
-
-        -0.5,  0.5,  0.5, -1.0,  0.0,  0.0,
-        -0.5,  0.5, -0.5, -1.0,  0.0,  0.0,
-        -0.5, -0.5, -0.5, -1.0,  0.0,  0.0,
-        -0.5, -0.5, -0.5, -1.0,  0.0,  0.0,
-        -0.5, -0.5,  0.5, -1.0,  0.0,  0.0,
-        -0.5,  0.5,  0.5, -1.0,  0.0,  0.0,
-
-        0.5,  0.5,  0.5,  1.0,  0.0,  0.0,
-        0.5,  0.5, -0.5,  1.0,  0.0,  0.0,
-        0.5, -0.5, -0.5,  1.0,  0.0,  0.0,
-        0.5, -0.5, -0.5,  1.0,  0.0,  0.0,
-        0.5, -0.5,  0.5,  1.0,  0.0,  0.0,
-        0.5,  0.5,  0.5,  1.0,  0.0,  0.0,
-
-        -0.5, -0.5, -0.5,  0.0, -1.0,  0.0,
-        0.5, -0.5, -0.5,  0.0, -1.0,  0.0,
-        0.5, -0.5,  0.5,  0.0, -1.0,  0.0,
-        0.5, -0.5,  0.5,  0.0, -1.0,  0.0,
-        -0.5, -0.5,  0.5,  0.0, -1.0,  0.0,
-        -0.5, -0.5, -0.5,  0.0, -1.0,  0.0,
-
-        -0.5,  0.5, -0.5,  0.0,  1.0,  0.0,
-        0.5,  0.5, -0.5,  0.0,  1.0,  0.0,
-        0.5,  0.5,  0.5,  0.0,  1.0,  0.0,
-        0.5,  0.5,  0.5,  0.0,  1.0,  0.0,
-        -0.5,  0.5,  0.5,  0.0,  1.0,  0.0,
-        -0.5,  0.5, -0.5,  0.0,  1.0,  0.0
-    ];
-
-    let positions:[Vec3;10] = [
-        Vec3::new(0.0, 0.0, 0.0),
-        Vec3::new(2.0, 5.0, -15.0),
-        Vec3::new(-1.5, -2.2, -2.5),
-        Vec3::new(-3.8, -2.0, -12.3),
-        Vec3::new(2.4, -0.4, -3.5),
-        Vec3::new(-1.7, 3.0, -7.5),
-        Vec3::new(1.3, -2.0, -2.5),
-        Vec3::new(1.5, 2.0, -2.5),
-        Vec3::new(1.5, 0.2, -1.5),
-        Vec3::new(-1.3, 1.0, -1.5),
-    ];
-
-    let positions_light:[Vec3;4] = [
-        Vec3::new( 0.7,  0.2,  2.0),
-        Vec3::new( 2.3, -3.3, -4.0),
-        Vec3::new(-4.0,  2.0, -12.0),
-        Vec3::new( 0.0,  0.0, -3.0)
-    ];
-
-    trace_log!("Preparing GPU Buffers\n");
-    let mut shape: Shape = Shape::new(Vec::from(vertices), None, DrawMode::RenderBoth);
-    let mut shape_light: Shape = Shape::new(Vec::from(vertices_light), None, DrawMode::RenderLight);
-
-    trace_log!("Prepare the texture!");
-    let mut texture: Texture = Texture::new(
-        gl::REPEAT as i32,
-        gl::REPEAT as i32,
-        gl::REPEAT as i32,
-        gl::LINEAR_MIPMAP_LINEAR as i32,
-        gl::LINEAR as i32,
-        "textures/container2.png",
-        ""
-    )
-    .unwrap_or_else(|err| {
-        error_log!("Error loading textures:{}", err);
-        panic!("Failed to load texture!");
-    });
-
-    let mut texture_specular: Texture = Texture::new(
-        gl::REPEAT as i32,
-        gl::REPEAT as i32,
-        gl::REPEAT as i32,
-        gl::LINEAR_MIPMAP_LINEAR as i32,
-        gl::LINEAR as i32,
-        "textures/container2_specular.png",
-        ""
-    )
-        .unwrap_or_else(|err| {
-            error_log!("Error loading textures:{}", err);
-            panic!("Failed to load texture!");
-        });
-
-    let texture_id: u32 = texture.create_texture();
-    let texture_id_specuar:u32 = texture_specular.create_texture();
-    let textures: Vec<(u32, &str)> = vec![(texture_id, "material.diffuse"),
-                                          (texture_id_specuar, "material.specular")];
 
     trace_log!("Preparing the renderer");
 
-
-    render_prepare(&mut lighting_shader, &textures);
 
     let mut last_x: f32 = window_width as f32 / 2.0;
     let mut last_y: f32 = window_height as f32 / 2.0;
@@ -247,7 +99,7 @@ pub fn create_window(window_title: &String, window_width: u32, window_height: u3
 
     let mut last_frame: f32 = 0.0;
 
-    let mut light = Light::new(Vec::from(positions_light));
+
 
 
 
@@ -305,18 +157,11 @@ pub fn create_window(window_title: &String, window_width: u32, window_height: u3
 
         // // The rest of the game loop goes here...
         unsafe {
-            gl::ClearColor(0.1, 0.1, 0.1, 1.0);
+            gl::ClearColor(0.05, 0.05, 0.05, 1.0);
             gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
         }
 
-        lighting_shader.apply_shader();
-        lighting_shader.set_uniform_3v(String::from("viewPos"),*camera.get_position());
-        lighting_shader.set_float(String::from("material.shininess"), 32.0);
-
-
-        light.apply_directional_light(&mut lighting_shader);
-        light.apply_default_light_properties(&mut lighting_shader, &mut camera);
-        light.apply_spotlight(&mut lighting_shader, &mut camera);
+        shader.apply_shader();
 
         //view/projection transformation
         let projection_matrix: Mat4 = Mat4::perspective_rh(
@@ -327,40 +172,15 @@ pub fn create_window(window_title: &String, window_width: u32, window_height: u3
         );
         let view_matrix: Mat4 = camera.view_matrix();
 
-        lighting_shader.set_uniform_matrix_4(String::from("projection"), projection_matrix);
-        lighting_shader.set_uniform_matrix_4(String::from("view"), view_matrix);
-        lighting_shader.set_uniform_matrix_4(String::from("model"), Mat4::IDENTITY);
-
-        // render the texture
-        render_bind_texture(&textures);
-
-        //render the cube
-//render(&mut lighting_shader, &mut shape);
+        shader.set_uniform_matrix_4(String::from("projection"), projection_matrix);
+        shader.set_uniform_matrix_4(String::from("view"), view_matrix);
 
 
+        let mut model_mat:Mat4 = Mat4::IDENTITY;
+        model_mat = model_mat * translate(Vec3::new(0.0, 0.0, 0.0))*scale(0.5,SCALE_X|SCALE_Y|SCALE_Z);
+        shader.set_uniform_matrix_4(String::from("model"), model_mat);
+        model.draw(&mut shader);
 
-        for (i,position) in positions.iter().enumerate() {
-            lighting_shader.apply_shader();
-
-            let angle:f32 = 20.0 * i as f32;
-            let model_matrix =
-                Mat4::IDENTITY * translate(*position) * rotate(angle, Vec3::new(1.0, 0.3, 0.5));
-            lighting_shader.set_uniform_matrix_4(String::from("model"), model_matrix);
-
-            render(&mut lighting_shader, &mut shape);
-        }
-
-        light_cube_shader.apply_shader();
-        light_cube_shader.set_uniform_matrix_4(String::from("projection"), projection_matrix);
-        light_cube_shader.set_uniform_matrix_4(String::from("view"), view_matrix);
-
-        for (i, position) in positions_light.iter().enumerate(){
-        //and finally render the lamp
-            let model_matrix =
-                Mat4::IDENTITY * translate(*position) * scale(0.2,SCALE_X|SCALE_Y|SCALE_Z);
-            light_cube_shader.set_uniform_matrix_4(String::from("model"), model_matrix);
-            render(&mut light_cube_shader, &mut shape_light);
-        }
         //////////////////////////
 
         imgui_manager.init_frame(&window, delta_time, &mut editor_state);

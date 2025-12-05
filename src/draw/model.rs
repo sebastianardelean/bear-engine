@@ -8,27 +8,28 @@ use asset_importer::node::Node;
 use asset_importer::postprocess::PostProcessSteps;
 use asset_importer::{Importer, Material, Scene, TextureType};
 use glam::Vec3;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use image::load;
 
 pub struct Model {
     loaded_textures: Vec<Texture>,
     meshes: Vec<MeshObject>,
-
+    directory:String,
     model_path: String,
     gamma_correction: bool,
 }
 
 impl Model {
-    pub fn new(texture_path: &str, model_path: &str, gamma_correction: bool) -> Model {
+    pub fn new(model_path: &str, gamma_correction: bool) -> Model {
         return Model {
             loaded_textures: Vec::new(),
             meshes: Vec::new(),
-
+            directory:String::new(),
             model_path: String::from(model_path),
             gamma_correction: gamma_correction,
         };
     }
+
 
     pub fn draw(&mut self, shader: &mut Shader) {
         for mesh in self.meshes.iter_mut() {
@@ -36,7 +37,7 @@ impl Model {
         }
     }
 
-    fn load_model(&mut self) {
+    pub fn load_model(&mut self) {
         let importer: Importer = Importer::new();
 
         let scene = importer
@@ -52,7 +53,7 @@ impl Model {
                 error_log!("Error loading model:\n{}", e);
                 panic!("Error loading model:\n{}", e);
             });
-        let home_model_directory = Path::new(self.model_path.as_str())
+        self.directory = Path::new(self.model_path.as_str())
             .parent()
             .map(|p| p.to_string_lossy().into_owned())
             .unwrap_or_default();
@@ -64,7 +65,8 @@ impl Model {
         let mut process_node_meshes = |node: &Node| {
             for i in 0..node.num_meshes() {
                 if let Some(mesh) = scene.mesh(i) {
-                    self.meshes.push(self.process_mesh(mesh, &scene));
+                    let processed_mesh = self.process_mesh(mesh,&scene);
+                    self.meshes.push(processed_mesh);
                 }
             }
         };
@@ -169,7 +171,7 @@ impl Model {
                 let mut skip:bool = false;
                 for loaded_texture in &self.loaded_textures {
                     if loaded_texture.get_texture_file() == texture_info.path {
-                        textures.push(*loaded_texture);
+                        textures.push(loaded_texture.clone());
                         skip = true;
                         break;
                     } else {
@@ -177,9 +179,12 @@ impl Model {
                     }
                 }
                 if skip == false {
+                    //let texture_path:PathBuf = [self.directory.clone(),texture_info.path].iter().collect();
                     let mut texture = Texture::new(
                         texture_info.path.as_str(),
-                        type_name.as_str()
+                        type_name.as_str(),
+                        self.directory.as_str(),
+
                     ).unwrap_or_else(|e| {
                         error_log!("Error loading texture:\n{}", e);
                         panic!("Error loading texture:\n{}", e);

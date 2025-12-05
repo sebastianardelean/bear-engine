@@ -22,15 +22,15 @@ impl MeshObject {
         };
     }
 
-    pub fn build(&mut self) -> (GLuint, GLuint, GLuint) {
-        return *self.gpu_buffers.get_or_init(|| self.init_gpu_buffers());
-    }
+
 
     pub fn draw(&mut self, shader:&mut Shader) {
         let mut diffuse_nr:u32 = 1;
         let mut specular_nr:u32 = 1;
         let mut normal_nr:u32 = 1;
         let mut height_nr:u32 = 1;
+        let (vao, _vbo, _ebo): (GLuint, GLuint, GLuint) =
+            *self.gpu_buffers.get_or_init(|| self.init_gpu_buffers());
         for (i, texture) in self.texture.iter_mut().enumerate() {
             unsafe {
                 gl::ActiveTexture(gl::TEXTURE0 + i as u32);
@@ -54,9 +54,9 @@ impl MeshObject {
                     value
                 }
                 "texture_height" => {
-                    height_nr = height_nr;
+                    let value = height_nr;
                     height_nr +=1;
-                    height_nr
+                    value
                 }
                 &_ => {
                     0
@@ -71,6 +71,17 @@ impl MeshObject {
             }
 
         }
+        unsafe {
+            gl::BindVertexArray(vao);
+            gl::DrawElements(
+                gl::TRIANGLES,
+                self.indices.len() as i32,
+                gl::UNSIGNED_INT,
+                std::ptr::null(),
+            );
+            gl::BindVertexArray(0);
+            gl::ActiveTexture(gl::TEXTURE0);
+         }
     }
 
     fn init_gpu_buffers(&self) -> (GLuint, GLuint, GLuint) {

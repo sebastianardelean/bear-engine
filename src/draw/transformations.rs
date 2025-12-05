@@ -32,6 +32,8 @@ pub fn scale(factor: f32, axes: ScaleMask) -> Mat4 {
     Mat4::from_scale(Vec3::new(x, y, z))
 }
 
+
+
 #[allow(unused)]
 pub fn rotate_around_one_axis(angle: f32, rotation_axis: RotationAxis) -> Mat4 {
     return match rotation_axis {
